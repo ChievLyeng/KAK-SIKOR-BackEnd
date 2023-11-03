@@ -1,6 +1,7 @@
 const dotenv = require("dotenv");
 const express = require("express");
 const mongoose = require("mongoose");
+const productRoute = require('./routes/productRoute')
 const cors = require("cors");
 
 dotenv.config({ path: "./config.env" });
@@ -14,6 +15,7 @@ app.use(cors());
 app.use("/", (req, res) => {
   res.status(200).json({ mssg: "Welocome to kaksikor api!" });
 });
+
 
 // connect to db
 mongoose
