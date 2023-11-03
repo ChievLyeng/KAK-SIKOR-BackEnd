@@ -3,6 +3,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
+const ReviewRoute = require("./routes/reviewRoute");
+
 dotenv.config({ path: "./config.env" });
 // express app
 const app = express();
@@ -11,9 +13,8 @@ app.use(express.json());
 app.use(cors());
 
 // routes
-app.use("/", (req, res) => {
-  res.status(200).json({ mssg: "Welocome to kaksikor api!" });
-});
+
+app.use("/reviews", ReviewRoute);
 
 // connect to db
 mongoose
