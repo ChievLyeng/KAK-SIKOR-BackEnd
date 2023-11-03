@@ -1,7 +1,7 @@
-import User from "./../models/userModel.js";
+const User = require("../models/userModel");
 
-//  user registration
-export const registerUser = async (req, res) => {
+// user registration
+const registerUser = async (req, res) => {
   try {
     const newUser = new User(req.body);
     const savedUser = await newUser.save();
@@ -11,8 +11,9 @@ export const registerUser = async (req, res) => {
   }
 };
 
-//  user login
-export const loginUser = async (req, res) => {
+// user login
+const loginUser = async (req, res) => {
+  console.log(req.body);
   try {
     const { email, password } = req.body;
 
@@ -30,4 +31,4 @@ export const loginUser = async (req, res) => {
   }
 };
 
-export default { registerUser, loginUser };
+module.exports = { registerUser, loginUser };
