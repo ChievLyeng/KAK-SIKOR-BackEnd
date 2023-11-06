@@ -31,8 +31,15 @@ const productSchema = new mongoose.Schema(
       data: Buffer,
       contentType: String,
     },
-    shipping: {
-      type: Boolean,
+    Supplier: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Supplier",
+    },
+    Origin: {
+      type: String,
+    },
+    Nutrition_Fact: {
+      type: String,
     },
   },
   { timestamps: true }

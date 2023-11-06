@@ -17,7 +17,7 @@ const router = express.Router();
 router.post(
   "/create-product",
   formidable(),
-  requireSignIn,
+
   createProductController
 );
 

@@ -4,8 +4,16 @@ const fs = require("fs");
 
 const createProductController = async (req, res) => {
   try {
-    const { name, description, price, category, quantity, shipping } =
-      req.fields;
+    const {
+      name,
+      description,
+      price,
+      category,
+      quantity,
+      shipping,
+      Nutrition_Fact,
+      Origin,
+    } = req.fields;
     const { photo } = req.files;
     const slug = slugify(name);
 
@@ -21,6 +29,8 @@ const createProductController = async (req, res) => {
       quantity,
       slug,
       shipping,
+      Nutrition_Fact,
+      Origin,
     });
 
     if (photo) {
@@ -51,6 +61,8 @@ const createProductController = async (req, res) => {
         photo: simplifiedPhotoData,
         createdAt: newProduct.createdAt,
         updatedAt: newProduct.updatedAt,
+        Nutrition_Fact: newProduct.Nutrition_Fact,
+        Origin: newProduct.Origin,
       },
     });
   } catch (error) {
@@ -86,6 +98,8 @@ const getProductController = async (req, res) => {
         price: product.price,
         category: product.category,
         quantity: product.quantity,
+        Nutrition_Fact: product.Nutrition_Fact,
+        Origin: product.Origin,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
         photo: simplifiedPhotoData,
@@ -118,6 +132,8 @@ const getAllProductsController = async (req, res) => {
         price: product.price,
         category: product.category,
         quantity: product.quantity,
+        Nutrition_Fact: product.Nutrition_Fact,
+        Origin: product.Origin,
         photo: {
           contentType: product.photo.contentType,
           data: "Photo data has been uploaded successfully",
@@ -184,7 +200,15 @@ const deleteProductController = async (req, res) => {
 const updateProductController = async (req, res) => {
   try {
     const productId = req.params.id;
-    const { name, description, price, category, quantity } = req.fields;
+    const {
+      name,
+      description,
+      price,
+      category,
+      quantity,
+      Nutrition_Fact,
+      Origin,
+    } = req.fields;
     const { photo } = req.files;
 
     // Check if the product exists
@@ -200,7 +224,9 @@ const updateProductController = async (req, res) => {
     product.price = price;
     product.category = category;
     product.quantity = quantity;
-    product.slug = slugify(name); // Make sure the slugify function is working properly
+    product.slug = slugify(name);
+    product.Nutrition_Fact = Nutrition_Fact;
+    product.Origin = Origin;
 
     if (photo) {
       product.photo.data = fs.readFileSync(photo.path);
@@ -221,9 +247,11 @@ const updateProductController = async (req, res) => {
         price: product.price,
         category: product.category,
         quantity: product.quantity,
-        photo: product.photo, // Make sure the photo is properly saved
+        photo: product.photo,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
+        Nutrition_Fact: product.Nutrition_Fact,
+        Origin: product.Origin,
       },
     });
   } catch (error) {
