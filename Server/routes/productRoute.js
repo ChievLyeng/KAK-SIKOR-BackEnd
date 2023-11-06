@@ -1,15 +1,39 @@
-const express = require('express')
+const express = require("express");
 const {
-    createProduct,
-    getProducts
-} = require('../controller/productController')
+  createProductController,
+  getProductController,
+  getAllProductsController,
+  getPhotoController,
+  deleteProductController,
+  updateProductController,
+} = require("../controller/productController");
+const formidable = require("express-formidable");
+const { requireSignIn } = require("../middlwares/authMiddleware");
+const router = express.Router();
 
-const router = express.Router()
+//routes
 
-// create product
-router.post('/upload',createProduct);
+// Create product router
+router.post(
+  "/create-product",
+  formidable(),
 
-// get product
-router.get('/products',getProducts)
+  createProductController
+);
 
-module.exports = router
+// get product route
+router.get("/get-product/:slug", formidable(), getProductController);
+
+// get product route
+router.get("/get-all-products", getAllProductsController);
+
+// get photo
+router.get("/get-photo/:id", getPhotoController);
+
+// delete product
+router.delete("/delete-product/:id", deleteProductController);
+
+// update product
+router.post("/update-product/:id", formidable(), updateProductController);
+
+module.exports = router;

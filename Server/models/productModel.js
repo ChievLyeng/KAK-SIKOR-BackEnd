@@ -1,70 +1,48 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const productSchema = mongoose.Schema({
-    p_Name:{
-        type: String,
-        required: [true, "Product mush have a name"],
-        trim: true,
-        unique: true
+const productSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
     },
-    p_Type: {
-        type: String,
-        enum: {
-            values: ['Fresh','Organic'],
-            message: 'Difficulty is either: Fresh,Organic'
-        }
+    slug: {
+      type: String,
+      required: true,
     },
-    p_Price: {
-        type: Number,
-        required: [true,"Product must have a price"]
+    description: {
+      type: String,
+      required: true,
     },
-    dis_Price: {
-        type: Number,
-        validate: {
-            validator: function(val){
-                return val < this.p_Price; 
-            },
-            message: 'Discount price (${VALUE}) should be below regular price' 
-        }
+    price: {
+      type: Number,
+      required: true,
     },
-    p_Image:{
-        data: Buffer,
-        contentType: String,
+    category: {
+      type: mongoose.ObjectId,
+      ref: "Category",
+      required: true,
     },
-    Quantity: {
-        type: Number,
-        validate: {
-            validator: function (value) {
-              // Regular expression to match decimal numbers
-              return /^\d+(\.\d+)?$/.test(value);
-            },
-            message: 'Quantity should be decimal number.'
-          },
-        required: [true,'Producte must have quantity']
+    quantity: {
+      type: Number,
+      required: true,
+    },
+    photo: {
+      data: Buffer,
+      contentType: String,
     },
     Supplier: {
-        type: String,
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Supplier",
     },
-    Origin:{
-        type: String,
-        required: true
+    Origin: {
+      type: String,
     },
     Nutrition_Fact: {
-        type: String
+      type: String,
     },
-    Description: {
-        type: String
-    },
-    Other: {
-        type: String
-    }
-    
-},{ timestamps : true,
-    toJSON: {virtuals: true},
-    toObject: {virtuals: true} });
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('Products',productSchema)
-
-
-
+module.exports = mongoose.model("Product", productSchema);
