@@ -74,6 +74,11 @@ const userSchema = new mongoose.Schema(
       },
     },
     profilePicture: String,
+    role: {
+      type: String,
+      enum: ["user", "supplier", "admin"],
+      default: "user",
+    },
     password: {
       type: String,
       required: [true, "Password is required"],
@@ -105,6 +110,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// Hash password before saving
 userSchema.pre("save", async function (next) {
   // Only run this function if password was actually modified
   if (!this.isModified("password")) return next();
@@ -115,6 +121,11 @@ userSchema.pre("save", async function (next) {
   this.confirmPassword = undefined;
   next();
 });
+
+// Define a method to compare passwords
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
 const User = mongoose.model("User", userSchema);
 
