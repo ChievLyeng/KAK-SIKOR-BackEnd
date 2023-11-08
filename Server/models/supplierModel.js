@@ -26,4 +26,5 @@ const supplierSchema = User.discriminator(
   })
 );
 
-module.exports = mongoose.model("Supplier", supplierSchema);
+const Supplier = mongoose.model("Supplier", supplierSchema.schema);
+module.exports = Supplier;
