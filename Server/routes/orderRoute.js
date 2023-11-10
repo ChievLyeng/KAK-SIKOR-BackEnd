@@ -8,16 +8,16 @@ const {
   deleteOrder,
 } = require("../controller/orderController");
 
-// Create a new order
+// Create an order
 router.post("/create-order", createOrder);
 
 // Get all orders
 router.get("/", getAllOrders);
 
-// Get a single order by ID
+// Get a single order
 router.get("/:id", getOrderById);
 
-// Update an existing order
+// Update an order
 router.put("/:id", updateOrder);
 
 // Delete an order

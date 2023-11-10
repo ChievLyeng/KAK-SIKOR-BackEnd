@@ -17,14 +17,16 @@ const orderSchema = new mongoose.Schema(
         quantity: {
           type: Number,
           default: true,
+          min: [1, "quantity must be at least 1"],
+          require: true,
+        },
+        totalAmount: {
+          type: Number,
+          required: true,
         },
       },
     ],
-    totalAmount: {
-      type: Number,
-      required: true,
-    },
-    addressId: {
+    address: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Address",
       required: true,

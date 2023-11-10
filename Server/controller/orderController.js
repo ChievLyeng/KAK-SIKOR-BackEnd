@@ -3,12 +3,11 @@ const Order = require("../models/orderModel");
 // Create a new order
 const createOrder = async (req, res) => {
   try {
-    const { customer, products, totalAmount, addressId, status } = req.body;
+    const { customer, products, address, status } = req.body;
     const order = new Order({
       customer,
       products,
-      totalAmount,
-      addressId,
+      address,
       status,
     });
     await order.save();
@@ -48,15 +47,14 @@ const getOrderById = async (req, res) => {
 // Update an existing order
 const updateOrder = async (req, res) => {
   try {
-    const { customer, products, totalAmount, addressId, status } = req.body;
+    const { customer, products, address, status } = req.body;
     const order = await Order.findById(req.params.id);
     if (!order) {
       return res.status(404).json({ error: "Order not found." });
     }
     order.customer = customer;
     order.products = products;
-    order.totalAmount = totalAmount;
-    order.addressId = addressId;
+    order.address = address;
     order.status = status;
     await order.save();
     res.json(order);
