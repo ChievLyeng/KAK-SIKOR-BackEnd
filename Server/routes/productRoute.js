@@ -8,7 +8,7 @@ const {
   updateProductController,
 } = require("../controller/productController");
 const formidable = require("express-formidable");
-const { requireSignIn } = require("../middlwares/authMiddleware");
+const { requireSignIn } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 //routes
