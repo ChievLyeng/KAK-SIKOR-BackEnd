@@ -3,7 +3,7 @@ const categoryModel = require("../models/categoryModel");
 
 const createCategoryController = async (req, res) => {
   try {
-    const { name } = req.fields;
+    const { name } = req.body;
     if (!name) {
       return res.status(401).send({ message: "Name is required" });
     }
@@ -28,7 +28,7 @@ const createCategoryController = async (req, res) => {
     res.status(500).send({
       success: false,
       errro,
-      message: "Errro in Category",
+      message: "Error in Category",
     });
   }
 };

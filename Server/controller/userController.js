@@ -48,11 +48,11 @@ const loginUser = async (req, res) => {
   }
 };
 
-// Get All users and Suppliers
+// Get All users
 const getAllUsers = async (req, res) => {
   try {
-    const userCount = await User.countDocuments({ role: "user" });
-    const users = await User.find({ role: "user" });
+    const userCount = await User.countDocuments();
+    const users = await User.find();
 
     res
       .status(200)
@@ -62,10 +62,11 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+// get all suppliers
 const getAllSuppliers = async (req, res) => {
   try {
     const supplierCount = await Supplier.countDocuments({ role: "supplier" });
-    const suppliers = await Supplier.find({ role: "supplier" });
+    const suppliers = await User.find({ role: "supplier" });
 
     res
       .status(200)
@@ -75,4 +76,63 @@ const getAllSuppliers = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getAllUsers, getAllSuppliers };
+// delete user
+const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params; // Assuming the user ID is passed in the request parameters
+
+    // Find the user by ID and delete it
+    const deletedUser = await User.findByIdAndDelete(id);
+
+    if (!deletedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ message: "User deleted successfully", deletedUser });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// update user
+const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params; // Assuming the user ID is passed in the request parameters
+
+    // Exclude email from the fields to be updated
+    const { email, ...updateFields } = req.body;
+
+    // Find the user by ID
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Ensure email remains unchanged
+    updateFields.email = user.email;
+
+    // Update the user's information, excluding email
+    const updatedUser = await User.findByIdAndUpdate(id, updateFields, {
+      new: true, // Return the updated user
+      runValidators: true, // Run validators to ensure data validity
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ message: "User updated successfully", updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  getAllUsers,
+  getAllSuppliers,
+  updateUser,
+  deleteUser,
+};

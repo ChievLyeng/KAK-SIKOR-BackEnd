@@ -24,7 +24,7 @@ router.post(
 // get product route
 router.get("/get-product/:slug", formidable(), getProductController);
 
-// get product route
+// get all products
 router.get("/get-all-products", getAllProductsController);
 
 // get photo

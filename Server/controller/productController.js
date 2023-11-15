@@ -73,7 +73,7 @@ const createProductController = async (req, res) => {
   }
 };
 
-// get product controller
+// get a single product controller
 const getProductController = async (req, res) => {
   try {
     const { slug } = req.params;
@@ -113,6 +113,7 @@ const getProductController = async (req, res) => {
   }
 };
 
+// get all products
 const getAllProductsController = async (req, res) => {
   try {
     const products = await productModel

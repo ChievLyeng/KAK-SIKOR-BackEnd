@@ -1,22 +1,58 @@
 const Review = require("../models/reviewModel");
 const mongoose = require("mongoose");
 
-// gets all review
+// get all reviews
 const getReviews = async (req, res) => {
   try {
+    const countReview = await Review.countDocuments();
     const reviews = await Review.find({})
-      .populate("userId")
-      .populate("product")
+      // get only name from user model
+      .populate({
+        path: "userId",
+        select: ("firstName", "lastName"),
+      })
+      .populate({
+        path: "product",
+        select: "name",
+      })
       .sort({ createdAt: -1 });
 
-    res.status(200).json(reviews);
+    res
+      .status(200)
+      .json({ status: "success", result: countReview, data: { reviews } });
   } catch (error) {
     console.error("Error fetching reviews:", error);
     res.status(500).json({ error: "Error fetching reviews" });
   }
 };
 
-// create reviews
+// get a single review by ID
+const getReview = async (req, res) => {
+  const reviewId = req.params.id;
+
+  try {
+    const review = await Review.findById(reviewId)
+      .populate({
+        path: "userId",
+        select: ("firstName", "lastName"),
+      })
+      .populate({
+        path: "product",
+        select: "name",
+      });
+
+    if (!review) {
+      return res.status(404).json({ error: "Review not found" });
+    }
+
+    res.status(200).json({ status: "success", data: { review } });
+  } catch (error) {
+    console.error("Error fetching review by ID:", error);
+    res.status(500).json({ error: "Error fetching review by ID" });
+  }
+};
+
+// create review
 const createReview = async (req, res) => {
   const { userId, product, description, rating } = req.body;
 
@@ -34,7 +70,7 @@ const createReview = async (req, res) => {
   }
 };
 
-// delete reviews
+// delete review
 const deleteReview = async (req, res) => {
   const { id } = req.params;
 
@@ -86,4 +122,10 @@ const updateReview = async (req, res) => {
   }
 };
 
-module.exports = { getReviews, createReview, deleteReview, updateReview };
+module.exports = {
+  getReviews,
+  createReview,
+  deleteReview,
+  updateReview,
+  getReview,
+};
