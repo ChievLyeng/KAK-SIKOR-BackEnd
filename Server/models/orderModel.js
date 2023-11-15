@@ -2,34 +2,33 @@ const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
   {
-    customer: {
+    orderBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
     products: [
       {
         productId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
-          required: true,
         },
         quantity: {
           type: Number,
-          default: true,
-          min: [1, "quantity must be at least 1"],
-          require: true,
+          default: 1,
+          min: 1,
         },
         totalAmount: {
           type: Number,
-          required: true,
         },
       },
     ],
     address: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       ref: "Address",
-      required: true,
+    },
+    paymentIntent: {
+      type: Boolean,
+      default: false,
     },
     status: {
       type: String,
