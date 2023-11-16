@@ -4,6 +4,7 @@ const orderHistorySchema = new mongoose.Schema({
   orderId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Order",
+    require: true,
   },
   status: {
     type: String,
@@ -20,6 +21,7 @@ const orderHistorySchema = new mongoose.Schema({
   paymentIntent: {
     type: Boolean,
     default: true,
+    require: true,
   },
   orderDate: {
     type: Date,

@@ -5,6 +5,7 @@ const orderSchema = new mongoose.Schema(
     orderBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      require: true,
     },
     products: [
       {
@@ -22,9 +23,10 @@ const orderSchema = new mongoose.Schema(
         },
       },
     ],
-    address: {
+    deliveryAddress: {
       type: String,
-      ref: "Address",
+      minlength: 8,
+      require: true,
     },
     paymentIntent: {
       type: Boolean,

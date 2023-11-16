@@ -3,14 +3,15 @@ const Order = require("../models/orderModel");
 // Create a new order
 const createOrder = async (req, res) => {
   try {
-    const { orderBy, products, address, paymentIntent, status } = req.body;
-    if (!orderBy || !products || !address) {
+    const { orderBy, products, deliveryAddress, paymentIntent, status } =
+      req.body;
+    if (!orderBy || !products || !deliveryAddress) {
       return res.status(400).json({ message: "Missing required fields" });
     }
     const order = new Order({
       orderBy,
       products,
-      address,
+      deliveryAddress,
       paymentIntent,
       status,
     });
