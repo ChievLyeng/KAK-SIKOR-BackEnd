@@ -126,6 +126,7 @@ const getProductController = async (req, res) => {
 // get all products
 const getAllProductsController = async (req, res) => {
   try {
+    const productCount = await productModel.countDocuments();
     const products = await productModel
       .find({})
       .populate("category")
@@ -136,6 +137,7 @@ const getAllProductsController = async (req, res) => {
 
     res.status(200).json({
       success: true,
+      result: productCount,
       products: products.map((product) => ({
         _id: product._id,
         name: product.name,

@@ -34,6 +34,7 @@ const productSchema = new mongoose.Schema(
     Supplier: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Supplier",
+      required: true
     },
     Origin: {
       type: String,

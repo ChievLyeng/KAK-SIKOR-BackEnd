@@ -25,7 +25,18 @@ const createOrder = async (req, res) => {
 // Get all orders
 const getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find(req.body);
+    const orders = await Order.find(req.body)
+    .populate({
+      path: 'orderBy',
+      select: 'firstName lastName phoneNumber role email'
+    })
+    .populate({
+      path: 'products.productId', 
+      select: 'name price'
+    })
+    
+
+
     if (!orders || orders.length === 0) {
       return res.status(404).json({ message: "No orders found" });
     }
