@@ -56,17 +56,17 @@ const registerUser = async (req, res) => {
     const newUser = new userModel(req.body);
     const savedUser = await newUser.save();
 
-    // Check if the user has already requested to resend the verification link
-    const existingToken = await Token.findOne({ userId: savedUser._id });
+    // // Check if the user has already requested to resend the verification link
+    // const existingToken = await Token.findOne({ userId: savedUser._id });
 
-    // If there's an existing token, check if it's still valid
-    if (existingToken && existingToken.createdAt > Date.now() - 60000) {
-      // If the token is still valid, return a message indicating the need to wait
-      return res.status(400).json({
-        message:
-          "A resend link has been recently sent. Please wait for a minute before requesting again.",
-      });
-    }
+    // // If there's an existing token, check if it's still valid
+    // if (existingToken && existingToken.createdAt > Date.now() - 60000) {
+    //   // If the token is still valid, return a message indicating the need to wait
+    //   return res.status(400).json({
+    //     message:
+    //       "A resend link has been recently sent. Please wait for a minute before requesting again.",
+    //   });
+    // }
 
     // Generate a verification token
     const token = await new Token({
@@ -173,6 +173,53 @@ const verifyEmail = async (req, res) => {
   }
 };
 
+// Add this function to your userController.js file
+const resendVerificationEmail = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log("Resend Verification Request for User ID:", id);
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check if the user is already verified
+    if (user.verified) {
+      return res.status(400).json({ message: "User is already verified" });
+    }
+
+    // Check if there's an existing token, and if it's still valid
+    const existingToken = await Token.findOne({ userId: user._id });
+
+    if (existingToken && existingToken.createdAt > Date.now() - 60000) {
+      return res.status(400).json({
+        message:
+          "A resend link has been recently sent. Please wait for a minute before requesting again.",
+      });
+    }
+
+    // Generate a new verification token
+    const newToken = await new Token({
+      userId: user._id,
+      token: crypto.randomBytes(32).toString("hex"),
+    }).save();
+
+    // Construct the new verification URL
+    const verificationURL = `${process.env.BASE_URL}/users/${user._id}/verify/${newToken.token}`;
+
+    // Send the new verification email
+    await sendEmail(user.email, "Resend Verification Email", verificationURL);
+
+    res.status(200).json({ message: "Resend link sent successfully" });
+  } catch (error) {
+    console.error("Resend Verification Email Error:", error);
+    res
+      .status(500)
+      .json({ error: "Internal Server Error", message: error.message });
+  }
+};
+
 // Get All users
 const getAllUsers = async (req, res) => {
   try {
@@ -261,4 +308,5 @@ module.exports = {
   updateUser,
   deleteUser,
   verifyEmail,
+  resendVerificationEmail,
 };
