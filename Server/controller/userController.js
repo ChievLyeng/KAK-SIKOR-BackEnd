@@ -1,6 +1,9 @@
 const User = require("../models/userModel");
 const Supplier = require("../models/supplierModel");
 const jwt = require("jsonwebtoken");
+const sendEmail = require("../utils/sendEmail");
+const crypto = require("crypto");
+const Token = require("../models/tokenModel");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -53,8 +56,35 @@ const registerUser = async (req, res) => {
     const newUser = new userModel(req.body);
     const savedUser = await newUser.save();
 
-    // Use the createSendToken function to send the token in the response
-    createSendToken(savedUser, 201, res);
+    // Check if the user has already requested to resend the verification link
+    const existingToken = await Token.findOne({ userId: savedUser._id });
+
+    // If there's an existing token, check if it's still valid
+    if (existingToken && existingToken.createdAt > Date.now() - 60000) {
+      // If the token is still valid, return a message indicating the need to wait
+      return res.status(400).json({
+        message:
+          "A resend link has been recently sent. Please wait for a minute before requesting again.",
+      });
+    }
+
+    // Generate a verification token
+    const token = await new Token({
+      userId: savedUser._id,
+      token: crypto.randomBytes(32).toString("hex"),
+    }).save();
+
+    // Construct the verification URL
+    const verificationURL = `${process.env.BASE_URL}/users/${savedUser._id}/verify/${token.token}`;
+
+    // Send verification email
+    await sendEmail(savedUser.email, "Verify Email", verificationURL);
+
+    // Respond with a message to verify email
+    res.status(201).json({
+      message:
+        "An email has been sent to your account. Please verify your email before logging in.",
+    });
   } catch (error) {
     console.error("User registration error:", error);
     res
@@ -66,20 +96,80 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // Find the user by email
     const user = await User.findOne({ email });
 
-    // Check if the user exists and if the password is correct
-    if (user && (await user.matchPassword(password))) {
-      // Use the logInToken function to create the login token
-      const token = signToken(user._id);
-      createSendToken(user, 200, res);
-    } else {
-      res.status(401).json({ error: "Invalid email or password" });
+    // Check if the user exists
+    if (!user) {
+      return res.status(401).json({ error: "Invalid email or password" });
     }
+
+    // Check if the password is correct
+    const validPassword = await user.matchPassword(password);
+    if (!validPassword) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    // Check if the user is verified
+    if (!user.verified) {
+      // If not verified, return a response indicating the need for email verification
+      return res.status(400).json({
+        message: "Please verify your email before logging in.",
+      });
+    }
+
+    // If verified, use the logInToken function to create the login token
+    const token = signToken(user._id);
+    createSendToken(user, 200, res);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+//Verify Email
+const verifyEmail = async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.params.id });
+
+    if (!user) {
+      console.error("Invalid user ID");
+      return res.status(400).send({ message: "Invalid link" });
+    }
+
+    const token = await Token.findOne({
+      userId: user._id,
+      token: req.params.token,
+    });
+
+    if (!token) {
+      console.error("Invalid token");
+      return res.status(400).send({ message: "Invalid link" });
+    }
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: user._id },
+      { verified: true },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      console.error("Failed to update user verification status");
+      return res.status(500).send({ message: "Internal Server Error" });
+    }
+
+    // Check if token is defined before calling remove
+    if (token && typeof token.remove === "function") {
+      await token.remove();
+    } else {
+      console.error("Token not found or remove method not available");
+    }
+
+    console.log("Email verified successfully");
+    res.status(200).send({ message: "Email verified successfully" });
+  } catch (error) {
+    console.error("Verify Email Error:", error);
+    res
+      .status(500)
+      .send({ message: "Internal Server Error", error: error.message });
   }
 };
 
@@ -170,4 +260,5 @@ module.exports = {
   getAllSuppliers,
   updateUser,
   deleteUser,
+  verifyEmail,
 };
