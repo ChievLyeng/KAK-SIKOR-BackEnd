@@ -13,11 +13,19 @@ const createProductController = async (req, res) => {
       shipping,
       Nutrition_Fact,
       Origin,
+      Supplier, // Supplier ID directly available in the request body
     } = req.fields;
     const { photo } = req.files;
     const slug = slugify(name);
 
-    if (!name || !description || !price || !category || !quantity) {
+    if (
+      !name ||
+      !description ||
+      !price ||
+      !category ||
+      !quantity ||
+      !Supplier
+    ) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -31,6 +39,7 @@ const createProductController = async (req, res) => {
       shipping,
       Nutrition_Fact,
       Origin,
+      Supplier, // Assign the Supplier ID directly to the Supplier field
     });
 
     if (photo) {
@@ -63,10 +72,11 @@ const createProductController = async (req, res) => {
         updatedAt: newProduct.updatedAt,
         Nutrition_Fact: newProduct.Nutrition_Fact,
         Origin: newProduct.Origin,
+        Supplier: newProduct.Supplier,
       },
     });
   } catch (error) {
-    console.error("Error in creating product:", error); // Log the specific error message
+    console.error("Error in creating product:", error);
     res
       .status(500)
       .json({ error: error, message: "Error in creating product" });
@@ -119,6 +129,7 @@ const getAllProductsController = async (req, res) => {
     const products = await productModel
       .find({})
       .populate("category")
+      .populate("Supplier")
       .select("-photo")
       .limit(12)
       .sort({ createdAt: -1 });
@@ -135,6 +146,7 @@ const getAllProductsController = async (req, res) => {
         quantity: product.quantity,
         Nutrition_Fact: product.Nutrition_Fact,
         Origin: product.Origin,
+        Supplier: product.Supplier,
         photo: {
           contentType: product.photo.contentType,
           data: "Photo data has been uploaded successfully",
