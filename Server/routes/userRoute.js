@@ -1,5 +1,9 @@
 const express = require("express");
-const { registerUser, loginUser } = require("../controller/userController");
+const {
+  registerUser,
+  loginUser,
+  verifyEmail,
+} = require("../controller/userController");
 const {
   getAllUsers,
   getAllSuppliers,
@@ -15,5 +19,6 @@ router.get("/users", getAllUsers);
 router.get("/suppliers", getAllSuppliers);
 router.delete("/delete/:id", deleteUser);
 router.post("/update/:id", updateUser);
+router.get("/:id/verify/:token", verifyEmail);
 
 module.exports = router;
