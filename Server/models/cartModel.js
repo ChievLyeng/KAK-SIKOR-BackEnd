@@ -18,17 +18,8 @@ const CartSchema = new mongoose.Schema(
           default: 1,
           required: [true, "Quantity is needed"],
         },
-        unitPrice: {
-          type: Number, // Add unitPrice field
-        },
-        totalAmount: {
-          type: Number, // Add totalAmount field
-        },
       },
     ],
-    total: {
-      type: Number, // Add a field for the total amount of the entire cart
-    },
   },
   { timestamps: true }
 );

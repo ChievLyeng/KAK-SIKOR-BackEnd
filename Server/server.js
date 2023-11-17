@@ -30,7 +30,7 @@ app.use("/reviews", ReviewRoute);
 app.use("/users", userRoute);
 app.use("/products", productRoute);
 app.use("/category", categoryRoute);
-app.use("/api", cartRoutes);
+app.use("/cart", cartRoutes);
 app.use("/orders", orderRoute);
 app.use("/orderHistories", orderHistoryRoute);
 
