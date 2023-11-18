@@ -104,6 +104,10 @@ const userSchema = new mongoose.Schema(
         message: "Passwords do not match.",
       },
     },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
