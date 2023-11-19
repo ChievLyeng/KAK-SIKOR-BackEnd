@@ -56,18 +56,6 @@ const registerUser = async (req, res) => {
     const newUser = new userModel(req.body);
     const savedUser = await newUser.save();
 
-    // // Check if the user has already requested to resend the verification link
-    // const existingToken = await Token.findOne({ userId: savedUser._id });
-
-    // // If there's an existing token, check if it's still valid
-    // if (existingToken && existingToken.createdAt > Date.now() - 60000) {
-    //   // If the token is still valid, return a message indicating the need to wait
-    //   return res.status(400).json({
-    //     message:
-    //       "A resend link has been recently sent. Please wait for a minute before requesting again.",
-    //   });
-    // }
-
     // Generate a verification token
     const token = await new Token({
       userId: savedUser._id,
