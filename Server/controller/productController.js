@@ -1,6 +1,7 @@
 const { default: slugify } = require("slugify");
 const productModel = require("../models/productModel");
 const fs = require("fs");
+const Supplier = require("../models/supplierModel");
 
 const createProductController = async (req, res) => {
   try {
@@ -86,9 +87,8 @@ const createProductController = async (req, res) => {
 // get a single product controller
 const getProductController = async (req, res) => {
   try {
-    const { slug } = req.params;
-
-    const product = await productModel.findOne({ slug });
+    const { id } = req.params;
+    const product = await productModel.findById(id).populate("Supplier");
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
@@ -113,6 +113,7 @@ const getProductController = async (req, res) => {
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
         photo: simplifiedPhotoData,
+        Supplier: product.Supplier,
       },
     });
   } catch (error) {
@@ -166,6 +167,7 @@ const getAllProductsController = async (req, res) => {
 };
 
 // Get photo controller
+
 const getPhotoController = async (req, res) => {
   try {
     const product = await productModel.findById(req.params.id);
@@ -253,40 +255,30 @@ const deleteProductController = async (req, res) => {
 };
 
 //update product controller
+
 const updateProductController = async (req, res) => {
   try {
     const productId = req.params.id;
-    const {
-      name,
-      description,
-      price,
-      category,
-      quantity,
-      Nutrition_Fact,
-      Origin,
-    } = req.fields;
-    const { photo } = req.files;
+    const updatedFields = req.fields; // Contains fields to be updated
 
     // Check if the product exists
-    let product = await productModel.findById(productId);
+    let product = await productModel.findById(productId).populate("Supplier");
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Update product details
-    product.name = name;
-    product.description = description;
-    product.price = price;
-    product.category = category;
-    product.quantity = quantity;
-    product.slug = slugify(name);
-    product.Nutrition_Fact = Nutrition_Fact;
-    product.Origin = Origin;
-
-    if (photo) {
-      product.photo.data = fs.readFileSync(photo.path);
-      product.photo.contentType = photo.type;
+    // Update product details based on received fields
+    for (const field in updatedFields) {
+      if (Object.prototype.hasOwnProperty.call(updatedFields, field)) {
+        if (field === "photo") {
+          const photo = req.files.photo;
+          product.photo.data = fs.readFileSync(photo.path);
+          product.photo.contentType = photo.type;
+        } else {
+          product[field] = updatedFields[field];
+        }
+      }
     }
 
     // Save the updated product
@@ -308,6 +300,7 @@ const updateProductController = async (req, res) => {
         updatedAt: product.updatedAt,
         Nutrition_Fact: product.Nutrition_Fact,
         Origin: product.Origin,
+        Supplier: product.Supplier,
       },
     });
   } catch (error) {

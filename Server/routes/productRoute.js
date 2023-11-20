@@ -23,7 +23,7 @@ router.post(
 );
 
 // get product route
-router.get("/get-product/:slug", formidable(), getProductController);
+router.get("/get-product/:id", formidable(), getProductController);
 
 // get all products
 router.get("/get-all-products", getAllProductsController);
