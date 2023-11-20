@@ -5,16 +5,28 @@ const User = require("../models/userModel"); // Assuming you have a User model
 const requireSignIn = async (req, res, next) => {
   try {
     const token = req.headers.authorization.split(" ")[1];
-    console.log("Received token:", token);
+
     const decoded = JWT.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded token:", decoded);
-    req.user = await User.findById(decoded._id);
+
+    req.user = await User.findById(decoded.id); // Updated to use 'id' instead of '_id'
     if (!req.user) {
-      return res.status(401).json({ error: "Unauthorized" });
+      console.log("User not found");
+      return res.status(401).json({ error: "User not found" });
     }
+
+    const id = req.params.id;
+
+    // Check if the user is authorized to perform the action
+    if (req.user._id.toString() !== id.toString()) {
+      return res.status(403).json({
+        error:
+          "Unauthorized: You can only perform this action on your own account",
+      });
+    }
+
     next();
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error in requireSignIn:", error);
     res.status(401).json({ error: "Unauthorized" });
   }
 };

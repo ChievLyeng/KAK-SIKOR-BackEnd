@@ -108,6 +108,27 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
+    lastLogin: {
+      type: Date,
+      default: Date.now,
+    },
+    passwordChangedAt: Date,
+    passwordHistory: [
+      {
+        password: {
+          type: String,
+          required: true,
+        },
+        timestamp: {
+          type: Date,
+        },
+      },
+    ],
   },
   {
     timestamps: true,
