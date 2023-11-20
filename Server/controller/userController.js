@@ -362,18 +362,17 @@ const updatePassword = async (req, res) => {
     }
 
     // Update the password and add the entry to password history
+    const timestamp = new Date().toISOString();
     user.password = newPassword;
     user.passwordHistory.push({
       password: newPassword,
-      timestamp: new Date().toISOString(),
+      timestamp,
     });
     await user.save();
 
     // Respond with a success message
-    const timestamp = new Date().toISOString();
     res.status(200).json({
       message: `Password updated successfully at ${timestamp}`,
-      timestamp,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
