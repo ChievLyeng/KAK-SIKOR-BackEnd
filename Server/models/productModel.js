@@ -31,13 +31,11 @@ const productSchema = new mongoose.Schema(
       data: Buffer,
       contentType: String,
     },
-    Supplier: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Supplier",
-        required: true
-      }
-    ],
+    Supplier: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Supplier",
+      required: true,
+    },
     Origin: {
       type: String,
     },

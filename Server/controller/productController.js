@@ -188,11 +188,11 @@ const getPhotoController = async (req, res) => {
 //get Product by supplier
 const getProductBySuppplier = async (req, res) => {
   try {
-    const {id:supplierID }= req.params
-    console.log("supplierId :",supplierID)
-  
+    const { id: supplierID } = req.params;
+    console.log("supplierId :", supplierID);
+
     const products = await productModel
-      .find({Supplier: supplierID})
+      .find({ Supplier: supplierID })
       .populate("category")
       .populate("Supplier")
       .select("-photo")
@@ -257,6 +257,7 @@ const deleteProductController = async (req, res) => {
 //update product controller
 
 const updateProductController = async (req, res) => {
+  console.log(req.fields);
   try {
     const productId = req.params.id;
     const updatedFields = req.fields; // Contains fields to be updated
@@ -272,9 +273,15 @@ const updateProductController = async (req, res) => {
     for (const field in updatedFields) {
       if (Object.prototype.hasOwnProperty.call(updatedFields, field)) {
         if (field === "photo") {
-          const photo = req.files.photo;
-          product.photo.data = fs.readFileSync(photo.path);
-          product.photo.contentType = photo.type;
+          const photo = req.files && req.files.photo;
+
+          // Check if the photo object and its path property exist before using it
+          if (photo && photo.path) {
+            product.photo.data = fs.readFileSync(photo.path);
+            product.photo.contentType = photo.type;
+          } else {
+            return res.status(400).json({ message: "Invalid photo data" });
+          }
         } else {
           product[field] = updatedFields[field];
         }
