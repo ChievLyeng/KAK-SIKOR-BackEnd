@@ -166,7 +166,6 @@ const getAllProductsController = async (req, res) => {
 };
 
 // Get photo controller
-
 const getPhotoController = async (req, res) => {
   try {
     const product = await productModel.findById(req.params.id);
@@ -181,6 +180,49 @@ const getPhotoController = async (req, res) => {
       message: "Error while getting photo",
       success: false,
     });
+  }
+};
+
+//get Product by supplier
+const getProductBySuppplier = async (req, res) => {
+  try {
+    const {id:supplierID }= req.params
+    console.log("supplierId :",supplierID)
+  
+    const products = await productModel
+      .find({Supplier: supplierID})
+      .populate("category")
+      .populate("Supplier")
+      .select("-photo")
+      .limit(12)
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      products: products.map((product) => ({
+        _id: product._id,
+        name: product.name,
+        slug: product.slug,
+        description: product.description,
+        price: product.price,
+        category: product.category,
+        quantity: product.quantity,
+        Nutrition_Fact: product.Nutrition_Fact,
+        Origin: product.Origin,
+        Supplier: product.Supplier,
+        photo: {
+          contentType: product.photo.contentType,
+          data: "Photo data has been uploaded successfully",
+        },
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
+      })),
+    });
+  } catch (error) {
+    console.error("Error in fetching all products:", error);
+    res
+      .status(500)
+      .json({ error: error, message: "Error in fetching all products" });
   }
 };
 
@@ -211,7 +253,6 @@ const deleteProductController = async (req, res) => {
 };
 
 //update product controller
-
 const updateProductController = async (req, res) => {
   try {
     const productId = req.params.id;
@@ -281,6 +322,7 @@ module.exports = {
   deleteProductController,
   createProductController,
   getProductController,
+  getProductBySuppplier,
   getPhotoController,
   getAllProductsController,
   updateProductController,

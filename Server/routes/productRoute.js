@@ -3,6 +3,7 @@ const {
   createProductController,
   getProductController,
   getAllProductsController,
+  getProductBySuppplier,
   getPhotoController,
   deleteProductController,
   updateProductController,
@@ -29,6 +30,9 @@ router.get("/get-all-products", getAllProductsController);
 
 // get photo
 router.get("/get-photo/:id", getPhotoController);
+
+//get product by supplier
+router.get('/supplier/:id',getProductBySuppplier)
 
 // delete product
 router.delete("/delete-product/:id", deleteProductController);
