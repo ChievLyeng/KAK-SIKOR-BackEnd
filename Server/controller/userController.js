@@ -11,17 +11,27 @@ const signToken = (id) => {
   });
 };
 
+const signRefreshToken = (id) => {
+  return jwt.sign({ id }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN,
+  });
+};
+
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
+  const refreshToken = signRefreshToken(user._id);
 
-  const cookieOptions = {
+  // Store the refresh token in the database or another secure location
+  // For simplicity, you can set it as an HttpOnly cookie
+  const refreshTokenCookieOptions = {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+      Date.now() + parseInt(process.env.REFRESH_TOKEN_COOKIE_EXPIRES_IN)
     ),
     httpOnly: true,
   };
 
-  res.cookie("jwt", token, cookieOptions);
+  res.cookie("jwt", token, { httpOnly: true });
+  res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
 
   // remove password from output
   user.password = undefined;
@@ -29,6 +39,7 @@ const createSendToken = (user, statusCode, res) => {
   res.status(statusCode).json({
     status: "success",
     token,
+    refreshToken,
     data: {
       user,
     },
