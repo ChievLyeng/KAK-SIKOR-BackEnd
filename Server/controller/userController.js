@@ -84,8 +84,8 @@ const getSuppliersById = async (req, res) => {
 
     res
       .status(200)
-      .json({ status: "success", data: { supplier } });
-      console.log(supplier)
+      .json({ status: "success", data: supplier });
+      // console.log(supplier)
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
