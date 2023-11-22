@@ -11,6 +11,9 @@ const {
   deleteUser,
   updateUser,
   updatePassword,
+  forgotPassword,
+  verifyOTP,
+  resetNewPassword,
 } = require("../controller/userController");
 const requireSignIn = require("../middlewares/authMiddleware").requireSignIn;
 
@@ -25,5 +28,8 @@ router.post("/update-password/:id", requireSignIn, updatePassword);
 router.delete("/delete/:id", requireSignIn, deleteUser);
 router.get("/:id/verify/:token", verifyEmail);
 router.post("/resend-verification/:id", resendVerificationEmail);
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-otp", verifyOTP);
+router.post("/reset-password", resetNewPassword);
 
 module.exports = router;

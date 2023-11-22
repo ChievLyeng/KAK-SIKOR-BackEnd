@@ -117,7 +117,7 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    passwordChangedAt: Date,
+    passwordChangedAt: { type: Date },
     passwordHistory: [
       {
         password: {
@@ -144,6 +144,10 @@ userSchema.pre("save", async function (next) {
 
   // Delete passwordConfirm field
   this.confirmPassword = undefined;
+
+  // Update passwordChangedAt
+  this.passwordChangedAt = Date.now() - 1000;
+
   next();
 });
 
