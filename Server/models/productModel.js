@@ -28,8 +28,9 @@ const productSchema = new mongoose.Schema(
       required: true,
     },
     photo: {
-      data: Buffer,
-      contentType: String,
+      url: {
+        type: String,
+      },
     },
     Supplier: {
       type: mongoose.Schema.Types.ObjectId,

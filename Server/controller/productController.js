@@ -1,7 +1,32 @@
 const { default: slugify } = require("slugify");
 const productModel = require("../models/productModel");
-const fs = require("fs");
 const Supplier = require("../models/supplierModel");
+const AWS = require("aws-sdk");
+const fs = require("fs");
+const { v4: uuidv4 } = require("uuid");
+
+// Configure AWS
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
+
+// Create a new instance of the S3 class
+const s3 = new AWS.S3();
+
+const uploadToS3 = async (file) => {
+  const fileStream = fs.createReadStream(file.path);
+
+  const uploadParams = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: `${uuidv4()}-${file.name}`, // Unique key for the uploaded file
+    Body: fileStream,
+  };
+
+  const uploadResult = await s3.upload(uploadParams).promise();
+  return uploadResult.Location; // Return the S3 URL of the uploaded file
+};
 
 const createProductController = async (req, res) => {
   try {
@@ -14,7 +39,7 @@ const createProductController = async (req, res) => {
       shipping,
       Nutrition_Fact,
       Origin,
-      Supplier, // Supplier ID directly available in the request body
+      Supplier,
     } = req.fields;
     const { photo } = req.files;
     const slug = slugify(name);
@@ -30,6 +55,9 @@ const createProductController = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    // Upload photo to S3
+    const photoUrl = await uploadToS3(photo);
+
     const newProduct = new productModel({
       name,
       description,
@@ -40,21 +68,13 @@ const createProductController = async (req, res) => {
       shipping,
       Nutrition_Fact,
       Origin,
-      Supplier, // Assign the Supplier ID directly to the Supplier field
+      Supplier,
+      photo: {
+        url: photoUrl, // Storing the S3 URL of the photo
+      },
     });
 
-    if (photo) {
-      newProduct.photo.data = fs.readFileSync(photo.path);
-      newProduct.photo.contentType = photo.type;
-    }
-
     await newProduct.save();
-
-    // Prepare a simplified response for the photo data
-    const simplifiedPhotoData = {
-      contentType: newProduct.photo.contentType,
-      data: "Photo data has been uploaded successfully",
-    };
 
     res.status(200).json({
       message: "Product created successfully",
@@ -68,7 +88,7 @@ const createProductController = async (req, res) => {
         price: newProduct.price,
         category: newProduct.category,
         quantity: newProduct.quantity,
-        photo: simplifiedPhotoData,
+        photo: photoUrl,
         createdAt: newProduct.createdAt,
         updatedAt: newProduct.updatedAt,
         Nutrition_Fact: newProduct.Nutrition_Fact,
@@ -95,7 +115,7 @@ const getProductController = async (req, res) => {
     }
     const simplifiedPhotoData = {
       contentType: product.photo.contentType,
-      data: "Photo data has been uploaded successfully",
+      data: "Photo data has been uploaded successfully 222",
     };
 
     res.status(200).json({
@@ -132,8 +152,6 @@ const getAllProductsController = async (req, res) => {
       .find({})
       .populate("category")
       .populate("Supplier")
-      .select("-photo")
-      .limit(12)
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -150,10 +168,7 @@ const getAllProductsController = async (req, res) => {
         Nutrition_Fact: product.Nutrition_Fact,
         Origin: product.Origin,
         Supplier: product.Supplier,
-        photo: {
-          contentType: product.photo.contentType,
-          data: "Photo data has been uploaded successfully",
-        },
+        photo: product.photo.url, // Assuming the URL is stored in 'url' field
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
       })),
@@ -170,15 +185,30 @@ const getAllProductsController = async (req, res) => {
 
 const getPhotoController = async (req, res) => {
   try {
-    const product = await productModel.findById(req.params.id);
-    if (product.photo.data) {
-      res.set("Content-Type", product.photo.contentType);
-      return res.status(200).send(product.photo.data);
+    const { id } = req.params;
+    const product = await productModel.findById(id);
+
+    if (!product || !product.photo || !product.photo.url) {
+      return res
+        .status(404)
+        .json({ message: "Photo not found", success: false });
     }
+
+    const photoUrl = product.photo.url;
+
+    const s3Params = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: photoUrl.split("/").slice(-1)[0],
+      Expires: 3600, // Expiration time for the signed URL in seconds (adjust as needed)
+    };
+
+    const signedUrl = await s3.getSignedUrlPromise("getObject", s3Params);
+
+    res.status(200).json({ success: true, photo: { signedUrl } });
   } catch (error) {
-    console.log(error);
+    console.error("Error while getting photo:", error);
     res.status(500).json({
-      error: error,
+      error: error.message,
       message: "Error while getting photo",
       success: false,
     });
