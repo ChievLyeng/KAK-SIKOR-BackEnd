@@ -3,21 +3,24 @@ const OrderHistory = require("../models/orderHistoryModel");
 // Create a new order history
 const createOrderHistory = async (req, res) => {
   try {
-    const { orderId, status, paymentIntent, updateDate } = req.body;
-    if (!orderId || !status || !paymentIntent) {
-      return res
-        .status(400)
-        .json({ message: "orderId, status, and paymentIntent are required" });
+    const { orderId, orderItems, isPaid, isDelivered, orderDate } = req.body;
+    if (!orderId || !orderItems || !isPaid || !isDelivered || !orderDate) {
+      return res.status(400).json({
+        message: "orderId, orderItems, isPaid,and isDelivered are required",
+      });
     }
     const newOrderHistory = new OrderHistory({
       orderId,
-      status,
-      paymentIntent,
-      updateDate,
+      orderItems,
+      isPaid,
+      isDelivered,
+      orderDate,
     });
     const savedOrderHistory = await newOrderHistory.save();
 
-    res.status(201).json({ savedOrderHistory });
+    res
+      .status(201)
+      .json({ message: "Order History Created", savedOrderHistory });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -26,7 +29,7 @@ const createOrderHistory = async (req, res) => {
 // Get all order histories
 const getAllOrderHistory = async (req, res) => {
   try {
-    const orderHistory = await OrderHistory.find().populate();
+    const orderHistory = await OrderHistory.find();
     if (!orderHistory || orderHistory.length === 0) {
       return res.status(404).json({ message: "No order history found" });
     }
@@ -61,15 +64,15 @@ const getOrderHistoryByOrderId = async (req, res) => {
 const updateOrderHistory = async (req, res) => {
   try {
     const orderId = req.params.id;
-    const { status, paymentIntent } = req.body;
-    if (!status || !paymentIntent) {
+    const { isPaid, isDelivered, status } = req.body;
+    if (!isPaid || !isDelivered || !status) {
       return res
         .status(400)
-        .json({ message: "Status and paymentIntent are required" });
+        .json({ message: "isPaid, isDelevered and status are required" });
     }
     const updatedOrderHistory = await OrderHistory.findOneAndUpdate(
       { _id: orderId },
-      { $set: { status, paymentIntent } },
+      { $set: { isPaid, isDelivered, status } },
       { new: true }
     );
     if (!updatedOrderHistory) {
