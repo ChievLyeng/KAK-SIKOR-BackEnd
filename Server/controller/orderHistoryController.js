@@ -3,8 +3,8 @@ const OrderHistory = require("../models/orderHistoryModel");
 // Create a new order history
 const createOrderHistory = async (req, res) => {
   try {
-    const { orderId, orderItems, isPaid, isDelivered, orderDate } = req.body;
-    if (!orderId || !orderItems || !isPaid || !isDelivered || !orderDate) {
+    const { orderId, isPaid, isDelivered, orderDate, status } = req.body;
+    if (!orderId || !isPaid || !isDelivered || !status) {
       return res.status(400).json({
         message: "orderId, orderItems, isPaid,and isDelivered are required",
       });
@@ -15,6 +15,7 @@ const createOrderHistory = async (req, res) => {
       isPaid,
       isDelivered,
       orderDate,
+      status,
     });
     const savedOrderHistory = await newOrderHistory.save();
 

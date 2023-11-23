@@ -6,24 +6,6 @@ const orderHistorySchema = new mongoose.Schema({
     ref: "Order",
     required: true,
   },
-  orderItems: [
-    {
-      productCartId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: "cartItems",
-      },
-      name: { type: String, required: true },
-      quantity: { type: Number, required: true },
-      photo: { type: String, required: true },
-      price: { type: Number, required: true },
-    },
-  ],
-  totalAmount: {
-    type: Number,
-    required: true,
-    default: 0.0,
-  },
   isPaid: {
     type: Boolean,
     default: true,
@@ -44,10 +26,11 @@ const orderHistorySchema = new mongoose.Schema({
       "processing",
       "shipped",
       "delivered",
+      "completed",
       "cancelled",
       "refunded",
     ],
-    default: "delivered",
+    default: "completed",
   },
 });
 

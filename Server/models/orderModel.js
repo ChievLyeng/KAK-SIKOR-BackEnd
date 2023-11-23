@@ -14,36 +14,30 @@ const orderSchema = new mongoose.Schema(
           ref: "Product",
           required: true,
         },
-        name: {
-          type: String,
-          required: true,
-        },
-        photo: {
-          type: String,
-          required: true,
-        },
         quantity: {
           type: Number,
           default: 1,
-          min: 1,
           required: true,
         },
-        price: {
+        totalPrice: {
           type: Number,
         },
       },
     ],
-    shippingPrice: {
-      type: Number,
-    },
-    taxPrice: {
-      type: Number,
-    },
     itemsPrice: {
       type: Number,
       default: 0.0,
-      minlength: 0,
       required: true,
+    },
+    shippingPrice: {
+      type: Number,
+      required: true,
+      default: 0.0,
+    },
+    taxPrice: {
+      type: Number,
+      required: true,
+      default: 0.0,
     },
     paymentMethod: {
       type: String,
@@ -51,10 +45,8 @@ const orderSchema = new mongoose.Schema(
       enum: ["credit card", "cash on delivery"],
     },
     paymentResult: {
-      id: String,
-      status: String,
-      update_time: String,
-      email_address: String,
+      type: Object,
+      required: true,
     },
     totalAmount: {
       type: Number,
@@ -74,6 +66,7 @@ const orderSchema = new mongoose.Schema(
       default: false,
       required: true,
     },
+
     deliveredAt: {
       type: Date,
     },
@@ -89,6 +82,7 @@ const orderSchema = new mongoose.Schema(
         "processing",
         "shipped",
         "delivered",
+        "completed",
         "cancelled",
         "refunded",
       ],
