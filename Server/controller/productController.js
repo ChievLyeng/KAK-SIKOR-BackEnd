@@ -270,12 +270,27 @@ const deleteProductController = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    // Delete the product's image from S3
+    const photoUrl = product.photo.url;
+    const key = photoUrl.split("/").slice(-1)[0]; // Extract the key from the URL
+
+    const deleteParams = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: key,
+    };
+
+    // Delete image from S3
+    await s3.deleteObject(deleteParams).promise();
+
     // Delete the product
     await productModel.findByIdAndDelete(productId);
 
     res
       .status(200)
-      .json({ message: "Product deleted successfully", success: true });
+      .json({
+        message: "Product and associated image deleted successfully",
+        success: true,
+      });
   } catch (error) {
     console.error("Error in deleting product:", error);
     res
