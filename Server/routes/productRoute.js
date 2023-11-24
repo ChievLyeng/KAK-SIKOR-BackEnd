@@ -25,7 +25,7 @@ router.post(
 );
 
 // get product route
-router.get("/get-product/:id", formidable(), getProductController);
+router.get("/get-product/:id", getProductController);
 
 // get all products
 router.get("/get-all-products", getAllProductsController);
