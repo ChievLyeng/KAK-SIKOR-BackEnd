@@ -1,5 +1,13 @@
 const mongoose = require("mongoose");
 
+const photoSchema = new mongoose.Schema({
+  url: {
+    type: String,
+    required: true,
+  },
+  // Add other photo-related fields here if necessary
+});
+
 const productSchema = new mongoose.Schema(
   {
     name: {
@@ -27,11 +35,7 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    photo: {
-      url: {
-        type: String,
-      },
-    },
+    photos: [photoSchema],
     Supplier: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Supplier",

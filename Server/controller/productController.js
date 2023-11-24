@@ -4,7 +4,6 @@ const Supplier = require("../models/supplierModel");
 const AWS = require("aws-sdk");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
-
 // Configure AWS
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -24,12 +23,18 @@ const uploadToS3 = async (file) => {
     Body: fileStream,
   };
 
-  const uploadResult = await s3.upload(uploadParams).promise();
-  return uploadResult.Location; // Return the S3 URL of the uploaded file
+  try {
+    const uploadResult = await s3.upload(uploadParams).promise();
+    return uploadResult.Location; // Return the S3 URL of the uploaded file
+  } catch (error) {
+    console.error("Error uploading to S3:", error);
+    throw error;
+  }
 };
 
 const createProductController = async (req, res) => {
   try {
+    // Destructure fields from the request
     const {
       name,
       description,
@@ -41,9 +46,8 @@ const createProductController = async (req, res) => {
       Origin,
       Supplier,
     } = req.fields;
-    const { photo } = req.files;
-    const slug = slugify(name);
 
+    // Validate required fields
     if (
       !name ||
       !description ||
@@ -55,52 +59,53 @@ const createProductController = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Upload photo to S3
-    const photoUrl = await uploadToS3(photo);
+    // Slugify the name for URL-friendly slug
+    const slug = slugify(name);
 
+    // Ensure 'photos' is treated as an array
+    let photos = req.files.photos;
+    if (photos && !Array.isArray(photos)) {
+      photos = [photos];
+    }
+
+    const photoUrls = [];
+    // Process each photo if there are any
+    if (photos) {
+      for (const photo of photos) {
+        const photoUrl = await uploadToS3(photo);
+        photoUrls.push({ url: photoUrl });
+      }
+    }
+
+    // Create new product with the collected data
     const newProduct = new productModel({
       name,
+      slug,
       description,
       price,
       category,
       quantity,
-      slug,
       shipping,
       Nutrition_Fact,
       Origin,
-      Supplier,
-      photo: {
-        url: photoUrl, // Storing the S3 URL of the photo
-      },
+      Supplier: Supplier, // Assuming this is an ID or reference to a Supplier document
+      photos: photoUrls, // Array of photo URLs
     });
 
+    // Save the new product to the database
     await newProduct.save();
 
-    res.status(200).json({
+    // Send back a success response
+    res.status(201).json({
       message: "Product created successfully",
       success: true,
-      product: {
-        shipping: newProduct.shipping,
-        _id: newProduct._id,
-        name: newProduct.name,
-        slug: newProduct.slug,
-        description: newProduct.description,
-        price: newProduct.price,
-        category: newProduct.category,
-        quantity: newProduct.quantity,
-        photo: photoUrl,
-        createdAt: newProduct.createdAt,
-        updatedAt: newProduct.updatedAt,
-        Nutrition_Fact: newProduct.Nutrition_Fact,
-        Origin: newProduct.Origin,
-        Supplier: newProduct.Supplier,
-      },
+      product: newProduct,
     });
   } catch (error) {
     console.error("Error in creating product:", error);
     res
       .status(500)
-      .json({ error: error, message: "Error in creating product" });
+      .json({ message: "Error in creating product", error: error.message });
   }
 };
 
@@ -263,103 +268,122 @@ const deleteProductController = async (req, res) => {
   try {
     const productId = req.params.id;
 
-    // Check if the product exists
+    // Retrieve the product to get the list of photos
     const product = await productModel.findById(productId);
-
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Delete the product's image from S3
-    const photoUrl = product.photo.url;
-    const key = photoUrl.split("/").slice(-1)[0]; // Extract the key from the URL
+    // Check if there are photos to delete
+    if (product.photos && product.photos.length) {
+      // Create a promise for each delete operation
+      const deletePromises = product.photos.map((photo) => {
+        const key = photo.url.split("/").pop(); // Extract the key from the URL
+        return s3
+          .deleteObject({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: key,
+          })
+          .promise()
+          .catch((err) => {
+            console.error(`Failed to delete photo with key ${key}:`, err);
+            return null; // Return null for any failed delete operation
+          });
+      });
 
-    const deleteParams = {
-      Bucket: process.env.AWS_BUCKET_NAME,
-      Key: key,
-    };
+      // Wait for all delete promises to settle
+      const deleteResults = await Promise.all(deletePromises);
 
-    // Delete image from S3
-    await s3.deleteObject(deleteParams).promise();
+      // Filter out any null results (failed deletions)
+      const failedDeletes = deleteResults.filter((result) => result === null);
+      if (failedDeletes.length > 0) {
+        console.warn(`Failed to delete ${failedDeletes.length} photos.`);
+        // Optionally handle the failed deletions here
+      }
+    }
 
-    // Delete the product
+    // Delete the product from the database
     await productModel.findByIdAndDelete(productId);
 
     res
       .status(200)
-      .json({
-        message: "Product and associated image deleted successfully",
-        success: true,
-      });
+      .json({ message: "Product and associated images deleted successfully" });
   } catch (error) {
     console.error("Error in deleting product:", error);
     res
       .status(500)
-      .json({ error: error, message: "Error in deleting product" });
+      .json({ error: error.message, message: "Error in deleting product" });
   }
 };
+
+module.exports = deleteProductController;
 
 //update product controller
 
 const updateProductController = async (req, res) => {
-  console.log(req.fields);
   try {
     const productId = req.params.id;
     const updatedFields = req.fields; // Contains fields to be updated
+    const updatedPhotos = req.files.photos; // Assuming photos are being updated
 
     // Check if the product exists
-    let product = await productModel.findById(productId).populate("Supplier");
+    let product = await productModel.findById(productId);
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Update product details based on received fields
-    for (const field in updatedFields) {
-      if (Object.prototype.hasOwnProperty.call(updatedFields, field)) {
-        if (field === "photo") {
-          const photo = req.files && req.files.photo;
+    // If photos are updated, delete old photos from S3 and upload new ones
+    if (updatedPhotos) {
+      if (!Array.isArray(updatedPhotos)) {
+        updatedPhotos = [updatedPhotos]; // Ensure 'photos' is treated as an array
+      }
 
-          // Check if the photo object and its path property exist before using it
-          if (photo && photo.path) {
-            product.photo.data = fs.readFileSync(photo.path);
-            product.photo.contentType = photo.type;
-          } else {
-            return res.status(400).json({ message: "Invalid photo data" });
-          }
-        } else {
-          product[field] = updatedFields[field];
+      // Delete old photos from S3
+      if (product.photos && product.photos.length > 0) {
+        for (const photo of product.photos) {
+          const key = photo.url.split("/").pop(); // Extract the key from the URL
+          const deleteParams = {
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: key,
+          };
+          await s3.deleteObject(deleteParams).promise();
         }
+      }
+
+      // Upload new photos to S3
+      const photoUrls = [];
+      for (const photo of updatedPhotos) {
+        const photoUrl = await uploadToS3(photo);
+        photoUrls.push({ url: photoUrl });
+      }
+      product.photos = photoUrls; // Update the photos array in the product document
+    }
+
+    // Update other product details based on received fields
+    for (const field in updatedFields) {
+      if (updatedFields.hasOwnProperty(field) && field !== "photos") {
+        product[field] = updatedFields[field];
       }
     }
 
-    // Save the updated product
-    product = await product.save();
+    // Save the updated product to the database
+    await product.save();
 
     res.status(200).json({
       message: "Product updated successfully",
       success: true,
       product: {
-        _id: product._id,
-        name: product.name,
-        slug: product.slug,
-        description: product.description,
-        price: product.price,
-        category: product.category,
-        quantity: product.quantity,
-        photo: product.photo,
-        createdAt: product.createdAt,
-        updatedAt: product.updatedAt,
-        Nutrition_Fact: product.Nutrition_Fact,
-        Origin: product.Origin,
-        Supplier: product.Supplier,
+        ...product.toObject(), // Convert Mongoose document to a plain object
+        photos: product.photos.map((photo) => photo.url), // Map through photos to return only URLs
       },
     });
   } catch (error) {
     console.error("Error in updating product:", error);
-    res
-      .status(500)
-      .json({ error: error, message: "Error in updating product" });
+    res.status(500).json({
+      error: error.message,
+      message: "Error in updating product",
+    });
   }
 };
 

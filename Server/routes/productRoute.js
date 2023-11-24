@@ -11,14 +11,16 @@ const {
 const formidable = require("express-formidable");
 const { requireSignIn } = require("../middlewares/authMiddleware");
 const router = express.Router();
+const formOptions = {
+  multiples: true,
+};
 
 //routes
 
 // Create product router
 router.post(
   "/create-product",
-  formidable(),
-
+  formidable(formOptions),
   createProductController
 );
 
@@ -32,12 +34,16 @@ router.get("/get-all-products", getAllProductsController);
 router.get("/get-photo/:id", getPhotoController);
 
 //get product by supplier
-router.get('/supplier/:id',getProductBySuppplier)
+router.get("/supplier/:id", getProductBySuppplier);
 
 // delete product
 router.delete("/delete-product/:id", deleteProductController);
 
 // update product
-router.post("/update-product/:id", formidable(), updateProductController);
+router.post(
+  "/update-product/:id",
+  formidable(formOptions),
+  updateProductController
+);
 
 module.exports = router;
