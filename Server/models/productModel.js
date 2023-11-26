@@ -16,7 +16,6 @@ const productSchema = new mongoose.Schema(
     },
     slug: {
       type: String,
-      required: true,
     },
     description: {
       type: String,
@@ -43,9 +42,11 @@ const productSchema = new mongoose.Schema(
     },
     Origin: {
       type: String,
+      required: true,
     },
     Nutrition_Fact: {
       type: String,
+      required: true,
     },
   },
   { timestamps: true }

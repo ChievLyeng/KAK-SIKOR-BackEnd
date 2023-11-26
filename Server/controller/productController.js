@@ -135,11 +135,13 @@ const createProductController = async (req, res) => {
 const getProductController = async (req, res) => {
   try {
     const { id } = req.params;
+    // Attempt to find the product by ID, populating the Supplier and category fields if they are references to other schemas
     const product = await productModel
       .findById(id)
       .populate("Supplier")
       .populate("category");
 
+    // If the product is not found, return a 404 error
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
@@ -150,6 +152,7 @@ const getProductController = async (req, res) => {
         return [];
       }
 
+      // Generate signed URLs for each photo
       const signedUrls = await Promise.all(
         product.photos.map(async (photo) => {
           const signedUrl = await s3.getSignedUrlPromise("getObject", {
@@ -167,6 +170,7 @@ const getProductController = async (req, res) => {
     // Generating signed URLs for photos in the product
     const photoUrls = await generateSignedUrls(product);
 
+    // Construct and send the response object with all necessary fields
     res.status(200).json({
       success: true,
       product: {
@@ -179,16 +183,18 @@ const getProductController = async (req, res) => {
         quantity: product.quantity,
         photos: photoUrls, // Include the array of signed photo URLs
         Supplier: product.Supplier,
+        Nutrition_Fact: product.Nutrition_Fact, // Include the Nutrition_Fact field
+        Origin: product.Origin, // Include the Origin field
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
-        // Add any other fields that you want to include in the response
+        // ... any other fields you want to include ...
       },
     });
   } catch (error) {
     console.error("Error in fetching product:", error);
     res
       .status(500)
-      .json({ error: error, message: "Error in fetching product" });
+      .json({ error: error.message, message: "Error in fetching product" });
   }
 };
 
@@ -389,6 +395,8 @@ const deleteProductController = async (req, res) => {
 
 //update product controller
 const updateProductController = async (req, res) => {
+  console.log(req.files);
+  console.log(req.fields);
   const { id } = req.params;
   const updateData = req.fields; // Assuming this contains all other product fields to update
 
