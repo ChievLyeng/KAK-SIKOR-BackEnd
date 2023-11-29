@@ -5,6 +5,7 @@ const {
   updateReview,
   deleteReview,
   getReview,
+  getReviewsByProduct,
 } = require("../controller/reviewController");
 
 const router = express.Router();
@@ -14,6 +15,9 @@ router.get("/", getReviews);
 
 // get a single review
 router.get("/:id", getReview);
+
+// get review by product
+router.get("/product/:id", getReviewsByProduct);
 
 // create review
 router.post("/create-review", createReview);

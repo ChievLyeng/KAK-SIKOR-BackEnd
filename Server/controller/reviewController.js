@@ -1,4 +1,5 @@
 const Review = require("../models/reviewModel");
+const User = require("../models/userModel");
 const mongoose = require("mongoose");
 
 // get all reviews
@@ -7,10 +8,7 @@ const getReviews = async (req, res) => {
     const countReview = await Review.countDocuments();
     const reviews = await Review.find({})
       // get only name from user model
-      .populate({
-        path: "userId",
-        select: ("firstName", "lastName"),
-      })
+      .populate("userId")
       .populate({
         path: "product",
         select: "name",
@@ -31,15 +29,10 @@ const getReview = async (req, res) => {
   const reviewId = req.params.id;
 
   try {
-    const review = await Review.findById(reviewId)
-      .populate({
-        path: "userId",
-        select: ("firstName", "lastName"),
-      })
-      .populate({
-        path: "product",
-        select: "name",
-      });
+    const review = await Review.findById(reviewId).populate("userId").populate({
+      path: "product",
+      select: "name",
+    });
 
     if (!review) {
       return res.status(404).json({ error: "Review not found" });
@@ -57,6 +50,14 @@ const createReview = async (req, res) => {
   const { userId, product, description, rating } = req.body;
 
   try {
+    // Check if the user has the role "user"
+    if (req.body.role !== "user") {
+      return res.status(403).json({
+        error:
+          'Permission denied. Only users with the "user" role can create reviews.',
+      });
+    }
+
     const review = await Review.create({
       userId,
       product,
@@ -122,10 +123,35 @@ const updateReview = async (req, res) => {
   }
 };
 
+// get reviews by product ID
+const getReviewsByProduct = async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    const countReviews = await Review.countDocuments({ product: productId });
+    const review = await Review.find({ product: productId })
+      .populate("userId")
+      .populate({
+        path: "product",
+        select: "name",
+      })
+      .select("description rating")
+      .sort({ createdAt: -1 });
+
+    res
+      .status(200)
+      .json({ status: "success", result: countReviews, data: { review } });
+  } catch (error) {
+    console.error("Error fetching reviews by product ID:", error);
+    res.status(500).json({ error: "Error fetching reviews by product ID" });
+  }
+};
+
 module.exports = {
   getReviews,
   createReview,
   deleteReview,
   updateReview,
   getReview,
+  getReviewsByProduct,
 };
