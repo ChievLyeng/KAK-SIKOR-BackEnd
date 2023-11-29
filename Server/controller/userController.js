@@ -117,6 +117,19 @@ const registerUser = async (req, res) => {
         "An email has been sent to your account. Please verify your email before logging in.",
     });
   } catch (error) {
+    if (error.code === 11000) {
+      // Duplicate key error, indicating a duplication of a unique field
+      if (error.keyPattern.email) {
+        return res.status(400).json({ error: "Email is already in use." });
+      }
+      if (error.keyPattern.phoneNumber) {
+        return res
+          .status(400)
+          .json({ error: "Phone number is already in use." });
+      }
+      // Handle other duplicated fields if needed
+    }
+
     console.error("User registration error:", error);
     res
       .status(400)
