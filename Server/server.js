@@ -9,6 +9,10 @@ const orderRoute = require("./routes/orderRoute");
 const orderHistoryRoute = require("./routes/orderHistoryRoute");
 const cors = require("cors");
 const morgan = require("morgan");
+const passport = require("passport");
+const session = require("express-session");
+const passportConfig = require("./utils/passportSetUp");
+
 require("dotenv").config();
 
 const ReviewRoute = require("./routes/reviewRoute");
@@ -24,6 +28,17 @@ app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false },
+  })
+);
+
+app.use(passportConfig.initialize());
+app.use(passportConfig.session());
 
 // routes
 app.use("/reviews", ReviewRoute);

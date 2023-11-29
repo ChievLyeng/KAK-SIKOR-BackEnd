@@ -8,46 +8,74 @@ const resetPassword = require("../utils/resetPasswordEmail");
 const bcrypt = require("bcryptjs");
 const Otp = require("../models/otpModel");
 const generateOTP = require("../utils/generateOTP");
+const SessionToken = require("../models/sessionModel");
 
+const saveTokensToDB = async (userId) => {
+  try {
+    const accessToken = await signToken(userId);
+    const refreshToken = await signRefreshToken(userId);
+
+    const token = new SessionToken({
+      userId,
+      accessToken,
+      refreshToken,
+    });
+
+    await token.save();
+    console.log("Tokens saved to the database");
+  } catch (error) {
+    console.error("Error saving tokens to the database:", error.message);
+  }
+};
+
+// Access Token
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
 
+// Refresh Token
 const signRefreshToken = (id) => {
   return jwt.sign({ id }, process.env.REFRESH_TOKEN_SECRET, {
     expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN,
   });
 };
 
-const createSendToken = (user, statusCode, res) => {
-  const token = signToken(user._id);
-  const refreshToken = signRefreshToken(user._id);
+const createSendToken = async (user, statusCode, res) => {
+  try {
+    const token = signToken(user._id);
+    const refreshToken = signRefreshToken(user._id);
 
-  // Store the refresh token in the database or another secure location
-  // For simplicity, you can set it as an HttpOnly cookie
-  const refreshTokenCookieOptions = {
-    expires: new Date(
-      Date.now() + parseInt(process.env.REFRESH_TOKEN_COOKIE_EXPIRES_IN)
-    ),
-    httpOnly: true,
-  };
+    // Store tokens in the database
+    await saveTokensToDB(user._id, token, refreshToken);
 
-  res.cookie("jwt", token, { httpOnly: true });
-  res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
+    // For simplicity, you can set the refresh token as an HttpOnly cookie
+    const refreshTokenCookieOptions = {
+      expires: new Date(
+        Date.now() + parseInt(process.env.REFRESH_TOKEN_COOKIE_EXPIRES_IN)
+      ),
+      httpOnly: true,
+    };
 
-  // remove password from output
-  user.password = undefined;
+    res.cookie("accessToken", token, { httpOnly: true });
+    res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
 
-  res.status(statusCode).json({
-    status: "success",
-    token,
-    refreshToken,
-    data: {
-      user,
-    },
-  });
+    // remove password from output
+    user.password = undefined;
+
+    res.status(statusCode).json({
+      status: "success",
+      token,
+      refreshToken,
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    console.error("Error creating and sending tokens:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 const registerUser = async (req, res) => {
@@ -527,6 +555,27 @@ const resetNewPassword = async (req, res) => {
   }
 };
 
+const logoutUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Remove the user's session tokens from the database
+    await SessionToken.deleteMany({ userId });
+
+    // Clear the access token and refresh token cookies
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    res.status(200).json({
+      status: "success",
+      message: "User logged out successfully",
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -540,4 +589,5 @@ module.exports = {
   forgotPassword,
   verifyOTP,
   resetNewPassword,
+  logoutUser,
 };

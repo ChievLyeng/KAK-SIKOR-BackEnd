@@ -4,8 +4,6 @@ const {
   loginUser,
   verifyEmail,
   resendVerificationEmail,
-} = require("../controller/userController");
-const {
   getAllUsers,
   getAllSuppliers,
   deleteUser,
@@ -14,8 +12,10 @@ const {
   forgotPassword,
   verifyOTP,
   resetNewPassword,
+  logoutUser,
 } = require("../controller/userController");
 const requireSignIn = require("../middlewares/authMiddleware").requireSignIn;
+const passport = require("passport");
 
 const router = express.Router();
 
@@ -31,5 +31,22 @@ router.post("/resend-verification/:id", resendVerificationEmail);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-otp", verifyOTP);
 router.post("/reset-password", resetNewPassword);
+router.get("/logout/:id", logoutUser);
+
+// Route to initiate Google OAuth
+router.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+// Callback route after Google has authenticated the user
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/" }),
+  (req, res) => {
+    // Custom response after successful authentication
+    res.send("Successfully logged in with Google!");
+  }
+);
 
 module.exports = router;
