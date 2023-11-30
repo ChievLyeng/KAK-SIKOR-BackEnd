@@ -14,7 +14,7 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/", getAllUsers);
 router.get("/suppliers", getAllSuppliers);
-router.get("/supplier/:id",getSuppliersById);
+router.get("/supplier/:id", getSuppliersById);
 router.delete("/:id", deleteUser);
 router.post("/:id", updateUser);
 

@@ -78,19 +78,16 @@ const getAllSuppliers = async (req, res) => {
 
 //get supplier By Id
 const getSuppliersById = async (req, res) => {
-  const {id} = req.params
+  const { id } = req.params;
   try {
     const supplier = await User.findById(id);
 
-    res
-      .status(200)
-      .json({ status: "success", data: supplier });
-      // console.log(supplier)
+    res.status(200).json({ status: "success", data: supplier });
+    // console.log(supplier)
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 // delete user
 const deleteUser = async (req, res) => {
