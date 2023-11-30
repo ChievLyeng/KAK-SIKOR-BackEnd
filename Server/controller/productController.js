@@ -52,7 +52,7 @@ const deletePhotosFromS3 = async (urls = []) => {
   }
 };
 
-const createProductController = async (req, res) => {
+const createProduct = async (req, res) => {
   console.log(req.fields);
   console.log(req.files);
   try {
@@ -132,7 +132,7 @@ const createProductController = async (req, res) => {
 };
 
 // get a single product controller
-const getProductController = async (req, res) => {
+const getProduct = async (req, res) => {
   try {
     const { id } = req.params;
     // Attempt to find the product by ID, populating the Supplier and category fields if they are references to other schemas
@@ -199,7 +199,7 @@ const getProductController = async (req, res) => {
 };
 
 // get all products
-const getAllProductsController = async (req, res) => {
+const getAllProducts = async (req, res) => {
   try {
     const productCount = await productModel.countDocuments();
     const products = await productModel
@@ -254,7 +254,7 @@ const getAllProductsController = async (req, res) => {
 };
 
 // Get photo controller
-const getPhotoController = async (req, res) => {
+const getPhoto = async (req, res) => {
   try {
     const { id } = req.params; // Get the product ID from the request parameters
     const product = await productModel.findById(id); // Find the product by its ID
@@ -341,7 +341,7 @@ const getProductBySuppplier = async (req, res) => {
 };
 
 // Delete product controller
-const deleteProductController = async (req, res) => {
+const deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;
 
@@ -394,7 +394,7 @@ const deleteProductController = async (req, res) => {
 };
 
 //update product controller
-const updateProductController = async (req, res) => {
+const updateProduct = async (req, res) => {
   console.log(req.files);
   console.log(req.fields);
   const { id } = req.params;
@@ -444,11 +444,11 @@ const updateProductController = async (req, res) => {
 };
 
 module.exports = {
-  createProductController,
-  getProductController,
-  getAllProductsController,
-  getPhotoController,
+  createProduct,
+  getProduct,
+  getAllProducts,
+  getPhoto,
   getProductBySuppplier,
-  deleteProductController,
-  updateProductController,
+  deleteProduct,
+  updateProduct,
 };

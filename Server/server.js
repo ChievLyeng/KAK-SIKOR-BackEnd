@@ -4,9 +4,7 @@ const mongoose = require("mongoose");
 const productRoute = require("./routes/productRoute");
 const categoryRoute = require("./routes/categoryRoute");
 const userRoute = require("./routes/userRoute");
-const cartRoutes = require("./routes/cartRoute.js");
 const orderRoute = require("./routes/orderRoute");
-const orderHistoryRoute = require("./routes/orderHistoryRoute");
 const cors = require("cors");
 const morgan = require("morgan");
 require("dotenv").config();
@@ -26,23 +24,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // routes
-app.use("/reviews", ReviewRoute);
-app.use("/users", userRoute);
-app.use("/products", productRoute);
-app.use("/category", categoryRoute);
-app.use("/api", cartRoutes);
-app.use("/orders", orderRoute);
-app.use("/orderHistories", orderHistoryRoute);
+app.use("/v1/api", ReviewRoute);
+app.use("/v1/api", userRoute);
+app.use("/v1/api", productRoute);
+app.use("/v1/api", categoryRoute);
+app.use("/v1/api", orderRoute);
 
 // connect to db
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
-    // listen for requests
-    app.listen(process.env.PORT, () => {
-      console.log("Connected to MongoDB & Listening on port", process.env.PORT);
-    });
+    console.log("Database is connected");
   })
   .catch((error) => {
     console.error("Error connecting to MongoDB:", error);
   });
+app.listen(process.env.PORT, () => {
+  console.log("Connected to MongoDB & Listening on port", process.env.PORT);
+});

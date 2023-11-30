@@ -1,12 +1,12 @@
 const express = require("express");
 const {
-  createProductController,
-  getProductController,
-  getAllProductsController,
+  createProduct,
+  getProduct,
+  getAllProducts,
   getProductBySuppplier,
-  getPhotoController,
-  deleteProductController,
-  updateProductController,
+  getPhoto,
+  deleteProduct,
+  updateProduct,
 } = require("../controller/productController");
 const formidable = require("express-formidable");
 const { requireSignIn } = require("../middlewares/authMiddleware");
@@ -18,32 +18,13 @@ const formOptions = {
 //routes
 
 // Create product router
-router.post(
-  "/create-product",
-  formidable(formOptions),
-  createProductController
-);
-
-// get product route
-router.get("/get-product/:id", getProductController);
-
-// get all products
-router.get("/get-all-products", getAllProductsController);
-
-// get photo
-router.get("/get-photo/:id", getPhotoController);
-
-//get product by supplier
-router.get("/supplier/:id", getProductBySuppplier);
-
-// delete product
-router.delete("/delete-product/:id", deleteProductController);
-
-// update product
-router.post(
-  "/update-product/:id",
-  formidable(formOptions),
-  updateProductController
-);
+router
+  .post("/product", formidable(formOptions), createProduct)
+  .get("/:id", getProduct)
+  .get("/", getAllProducts)
+  .get("/:id", getPhoto)
+  .get("/:id", getProductBySuppplier)
+  .delete("/:id", deleteProduct)
+  .post("/:id", formidable(formOptions), updateProduct);
 
 module.exports = router;
