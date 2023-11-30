@@ -1,7 +1,7 @@
 {
-  "name": "server",
+  "name": "Kaksikor-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend for kakasikor web-app",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "aws-sdk": "^2.1508.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
