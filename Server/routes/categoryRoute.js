@@ -11,10 +11,12 @@ const express = require("express");
 const router = express.Router();
 
 //routes
-router.post("/catagories", createCategory)
-.put("/:slug",updateCategory)
-.get("/", getAllCategories)
-.delete("/:slug", deleteCategory)
-.get("/:slug", getSingleCategory)
+router.route("/catagories").post(createCategory).get(getAllCategories);
+
+router
+  .route("category/:slug")
+  .put(updateCategory)
+  .delete(deleteCategory)
+  .get(getSingleCategory);
 
 module.exports = router;

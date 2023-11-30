@@ -19,12 +19,16 @@ const formOptions = {
 
 // Create product router
 router
-  .post("/product", formidable(formOptions), createProduct)
-  .get("/:id", getProduct)
-  .get("/", getAllProducts)
-  .get("/:id", getPhoto)
-  .get("/:id", getProductBySuppplier)
-  .delete("/:id", deleteProduct)
-  .post("/:id", formidable(formOptions), updateProduct);
+  .route("/products")
+  .post(formidable(formOptions), createProduct)
+  .get(getAllProducts);
+
+router
+  .route("/product/:id")
+  .get(getProduct)
+  .get(getPhoto)
+  .get(getProductBySuppplier)
+  .delete(deleteProduct)
+  .post(formidable(formOptions), updateProduct);
 
 module.exports = router;

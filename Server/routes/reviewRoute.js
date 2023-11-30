@@ -10,12 +10,14 @@ const {
 
 const router = express.Router();
 
-router.get("/reviews", getReviews)
-.get("/:id", getReview)
-.get("/:id", getReviewsByProduct)
-.post("/", createReview)
-.post("/:id", updateReview)
-.delete("/:id", deleteReview)
+router.route("/reviews").get(getReviews).post(createReview);
 
+router
+  .route("/review/:id")
+  .get(getReview)
+  .post(updateReview)
+  .delete(deleteReview);
+
+router.get("/reviews/product/:id", getReviewsByProduct);
 
 module.exports = router;
