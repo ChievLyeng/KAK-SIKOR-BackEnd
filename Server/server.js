@@ -28,7 +28,7 @@ app.use("/reviews", ReviewRoute);
 app.use("/users", userRoute);
 app.use("/products", productRoute);
 app.use("/category", categoryRoute);
-app.use("/order", orderRoute);
+app.use("/orders", orderRoute);
 
 // connect to db
 mongoose
