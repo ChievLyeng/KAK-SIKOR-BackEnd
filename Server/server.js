@@ -5,7 +5,6 @@ const productRoute = require("./routes/productRoute");
 const categoryRoute = require("./routes/categoryRoute");
 const userRoute = require("./routes/userRoute");
 const orderRoute = require("./routes/orderRoute");
-const orderHistoryRoute = require("./routes/orderHistoryRoute");
 const cors = require("cors");
 const morgan = require("morgan");
 require("dotenv").config();
@@ -30,7 +29,6 @@ app.use("/users", userRoute);
 app.use("/products", productRoute);
 app.use("/category", categoryRoute);
 app.use("/orders", orderRoute);
-app.use("/orderHistories", orderHistoryRoute);
 
 // connect to db
 mongoose
