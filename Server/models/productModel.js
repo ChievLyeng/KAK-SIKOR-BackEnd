@@ -1,5 +1,13 @@
 const mongoose = require("mongoose");
 
+const photoSchema = new mongoose.Schema({
+  url: {
+    type: String,
+    required: true,
+  },
+  // Add other photo-related fields here if necessary
+});
+
 const productSchema = new mongoose.Schema(
   {
     name: {
@@ -8,7 +16,6 @@ const productSchema = new mongoose.Schema(
     },
     slug: {
       type: String,
-      required: true,
     },
     description: {
       type: String,
@@ -27,19 +34,19 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    photo: {
-      data: Buffer,
-      contentType: String,
-    },
+    photos: [photoSchema],
     Supplier: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Supplier",
+      required: true,
     },
     Origin: {
       type: String,
+      required: true,
     },
     Nutrition_Fact: {
       type: String,
+      required: true,
     },
   },
   { timestamps: true }

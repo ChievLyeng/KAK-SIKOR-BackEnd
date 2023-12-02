@@ -1,39 +1,34 @@
 const express = require("express");
 const {
-  createProductController,
-  getProductController,
-  getAllProductsController,
-  getPhotoController,
-  deleteProductController,
-  updateProductController,
+  createProduct,
+  getProduct,
+  getAllProducts,
+  getProductBySuppplier,
+  getPhoto,
+  deleteProduct,
+  updateProduct,
 } = require("../controller/productController");
 const formidable = require("express-formidable");
 const { requireSignIn } = require("../middlewares/authMiddleware");
 const router = express.Router();
+const formOptions = {
+  multiples: true,
+};
 
 //routes
 
 // Create product router
-router.post(
-  "/create-product",
-  formidable(),
+router
+  .route("/products")
+  .post(formidable(formOptions), createProduct)
+  .get(getAllProducts);
 
-  createProductController
-);
-
-// get product route
-router.get("/get-product/:slug", formidable(), getProductController);
-
-// get all products
-router.get("/get-all-products", getAllProductsController);
-
-// get photo
-router.get("/get-photo/:id", getPhotoController);
-
-// delete product
-router.delete("/delete-product/:id", deleteProductController);
-
-// update product
-router.post("/update-product/:id", formidable(), updateProductController);
+router
+  .route("/product/:id")
+  .get(getProduct)
+  .get(getPhoto)
+  .get(getProductBySuppplier)
+  .delete(deleteProduct)
+  .post(formidable(formOptions), updateProduct);
 
 module.exports = router;

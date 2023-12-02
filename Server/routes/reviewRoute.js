@@ -5,23 +5,19 @@ const {
   updateReview,
   deleteReview,
   getReview,
+  getReviewsByProduct,
 } = require("../controller/reviewController");
 
 const router = express.Router();
 
-// get all reviews
-router.get("/", getReviews);
+router.route("/reviews").get(getReviews).post(createReview);
 
-// get a single review
-router.get("/:id", getReview);
+router
+  .route("/review/:id")
+  .get(getReview)
+  .post(updateReview)
+  .delete(deleteReview);
 
-// create review
-router.post("/create-review", createReview);
-
-// update review
-router.post("/update-review/:id", updateReview);
-
-// delete review
-router.delete("/delete-review/:id", deleteReview);
+router.get("/reviews/product/:id", getReviewsByProduct);
 
 module.exports = router;

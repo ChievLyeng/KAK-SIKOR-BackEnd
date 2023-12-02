@@ -25,20 +25,23 @@ app.use(express.urlencoded({ extended: true }));
 
 // routes
 app.use("/reviews", ReviewRoute);
-app.use("/users", userRoute);
-app.use("/products", productRoute);
-app.use("/category", categoryRoute);
-app.use("/orders", orderRoute);
+app.use("/v1/api", ReviewRoute);
+app.use("/v1/api", userRoute);
+app.use("/v1/api", productRoute);
+app.use("/v1/api", categoryRoute);
+app.use("/v1/api", orderRoute);
+app.use("/orderHistories", orderHistoryRoute);
 
 // connect to db
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
-    // listen for requests
-    app.listen(process.env.PORT, () => {
-      console.log("Connected to MongoDB & Listening on port", process.env.PORT);
-    });
+    console.log("Database is connected");
   })
   .catch((error) => {
     console.error("Error connecting to MongoDB:", error);
   });
+
+app.listen(process.env.PORT, () => {
+  console.log("Connected to MongoDB & Listening on port", process.env.PORT);
+});
