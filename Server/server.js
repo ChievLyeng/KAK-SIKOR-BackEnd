@@ -7,7 +7,7 @@ const userRoute = require("./routes/userRoute");
 const orderRoute = require("./routes/orderRoute");
 const cors = require("cors");
 const morgan = require("morgan");
-const AppError = require('./utils/appError')
+const AppError = require('./utils/AppError')
 const {
   GlobalErrorHandler
 } = require('./middlewares/GlobalErrorhandler')
@@ -32,10 +32,10 @@ app.all("*", (req, res, next) => {
 app.use(GlobalErrorHandler);
 
 // routes
-app.use("/reviews", ReviewRoute);
-app.use("/users", userRoute);
-app.use("/products", productRoute);
-app.use("/category", categoryRoute);
+app.use("api/v1/reviews", ReviewRoute);
+app.use("api/v1/users", userRoute);
+app.use("api/v1/products", productRoute);
+app.use("api/v1/categories", categoryRoute);
 app.use("api/v1/orders", orderRoute);
 
 // connect to db

@@ -11,10 +11,10 @@ const express = require("express");
 const router = express.Router();
 
 //routes
-router.route("/catagories").post(createCategory).get(getAllCategories);
+router.route("/").post(createCategory).get(getAllCategories);
 
 router
-  .route("category/:slug")
+  .route("/:slug")
   .put(updateCategory)
   .delete(deleteCategory)
   .get(getSingleCategory);

@@ -19,12 +19,12 @@ const formOptions = {
 
 // Create product router
 router
-  .route("/products")
+  .route("/")
   .post(formidable(formOptions), createProduct)
   .get(getAllProducts);
 
 router
-  .route("/product/:id")
+  .route("/:id")
   .get(getProduct)
   .get(getPhoto)
   .get(getProductBySuppplier)
