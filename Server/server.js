@@ -8,7 +8,9 @@ const orderRoute = require("./routes/orderRoute");
 const cors = require("cors");
 const morgan = require("morgan");
 const AppError = require('./utils/appError')
-const globalErrorhandler = require('./middlewares/globalErrorhandler')
+const {
+  GlobalErrorHandler
+} = require('./middlewares/GlobalErrorhandler')
 require("dotenv").config();
 
 const ReviewRoute = require("./routes/reviewRoute");
@@ -27,16 +29,15 @@ app.use(express.urlencoded({ extended: true }));
 app.all("*", (req, res, next) => {
   next(new AppError(`Cant't find ${req.originalUrl} on this server!`, 404));
 });
-app.use(globalErrorhandler);
+app.use(GlobalErrorHandler);
 
 // routes
-app.use("/reviews", ReviewRoute);
-app.use("/v1/api", ReviewRoute);
-app.use("/v1/api", userRoute);
-app.use("/v1/api", productRoute);
-app.use("/v1/api", categoryRoute);
-app.use("/v1/api", orderRoute);
-app.use("/orderHistories", orderHistoryRoute);
+app.use("api/v1/reviews", ReviewRoute);
+app.use("api/v1/users", userRoute);
+app.use("api/v1/products", productRoute);
+app.use("api/v1/category", categoryRoute);
+app.use("api/v1/orders", orderRoute);
+app.use("/orders", orderRoute);
 
 // connect to db
 mongoose
