@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const photoSchema = new mongoose.Schema({
   url: {
     type: String,
-    required: true,
+    required: [true,'Photo is requrie.'],
   },
   // Add other photo-related fields here if necessary
 });
@@ -12,41 +12,47 @@ const productSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true,'Product mush have name.'],
+      unique: true
     },
     slug: {
       type: String,
+      unique: true
     },
     description: {
       type: String,
-      required: true,
+      required: [true,'Description is require.'],
     },
     price: {
       type: Number,
-      required: true,
+      required: [true,'Proudct must have price.'],
     },
     category: {
       type: mongoose.ObjectId,
       ref: "Category",
-      required: true,
+      required: [true,'Category is require.'],
+      unique: true
     },
     quantity: {
       type: Number,
-      required: true,
+      required: [true,'Quantity is require.'],
+      min : 1
     },
     photos: [photoSchema],
     Supplier: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Supplier",
-      required: true,
+      required: [true,'Supplier of product is require.'],
+      unique: true
     },
     Origin: {
       type: String,
-      required: true,
+      required: [true,'Product origin is require.'],
+      maxlength: [30, "First name cannot exceed 30 characters."],
     },
     Nutrition_Fact: {
       type: String,
-      required: true,
+      required: [true,'Nutrition fact is require.'],
     },
   },
   { timestamps: true }
