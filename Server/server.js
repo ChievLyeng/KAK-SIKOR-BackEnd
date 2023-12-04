@@ -12,6 +12,7 @@ const morgan = require("morgan");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const passportConfig = require("./utils/passportSetUp");
+const session = require("express-session");
 
 require("dotenv").config();
 
@@ -29,7 +30,18 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-app.use(passportConfig.initialize());
+
+// Use express-session middleware
+app.use(
+  session({
+    secret: "your-secret-key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+// Initialize Passport and restore authentication state if available from the session
+app.use(passport.initialize());
+app.use(passport.session());
 
 // routes
 app.use("/reviews", ReviewRoute);

@@ -388,10 +388,20 @@ const deleteUser = async (req, res) => {
     // Soft delete: Set the user status to "inactive" instead of removing from the database
     user.status = "inactive";
     user.supplierStatus = "inactive";
+
+    // Remove the user's session tokens from the database
+    await SessionToken.deleteMany({ userId: user._id });
+
+    // Save the user
     await user.save();
 
+    // Clear the access token and refresh token cookies
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
     res.status(200).json({
-      message: "Your account has been deactivated.",
+      message:
+        "Your account has been deactivated, and you have been logged out.",
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
