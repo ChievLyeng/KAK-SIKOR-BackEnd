@@ -9,7 +9,6 @@ const morgan = require("morgan");
 const AppError = require("./utils/appError");
 const GlobalErrorHandler = require("./middlewares/globalErrorhandler");
 const dotenv = require("dotenv");
-require("dotenv").config();
 dotenv.config({ path: "./config.env" });
 
 // express app

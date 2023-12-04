@@ -5,6 +5,7 @@ const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 const mongoose = require("mongoose");
 const asyncHandler = require("./../utils/asyncHandler");
+const AppError = require("./../utils/appError");
 
 // Configure AWS
 AWS.config.update({
@@ -26,28 +27,24 @@ const uploadToS3 = asyncHandler(async (file) => {
   };
 
   const uploadResult = await s3.upload(uploadParams).promise();
+  return uploadResult.Location; // Return the S3 URL of the uploaded file
 });
 
-const deletePhotosFromS3 = async (urls = []) => {
-  try {
-    const deletePromises = urls.map((url) => {
-      const Key = url.split("/").slice(-1)[0]; // Extract the object key from the URL
-      const params = {
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: Key,
-      };
-      return s3.deleteObject(params).promise();
-    });
+const deletePhotosFromS3 = asyncHandler(async (urls = [], next) => {
+  const deletePromises = urls.map((url) => {
+    const Key = url.split("/").slice(-1)[0]; // Extract the object key from the URL
+    const params = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: Key,
+    };
+    return s3.deleteObject(params).promise();
+  });
 
-    await Promise.all(deletePromises);
-    console.log(`Deleted ${urls.length} photo(s) from S3`);
-  } catch (error) {
-    console.error("Error deleting photo(s) from S3:", error);
-    throw new Error("Error deleting photo(s) from S3");
-  }
-};
+  await Promise.all(deletePromises);
+  console.log(`Deleted ${urls.length} photo(s) from S3`);
+});
 
-const createProduct = asyncHandler(async (req, res) => {
+const createProduct = asyncHandler(async (req, res, next) => {
   console.log(req.fields);
   console.log(req.files);
 
@@ -66,7 +63,7 @@ const createProduct = asyncHandler(async (req, res) => {
 
   // Validate required fields
   if (!name || !description || !price || !category || !quantity || !Supplier) {
-    return res.status(400).json({ message: "All fields are required" });
+    return next(new AppError("All fields are require.",400));
   }
 
   // Slugify the name for URL-friendly slug
@@ -114,7 +111,7 @@ const createProduct = asyncHandler(async (req, res) => {
 });
 
 // get a single product controller
-const getProduct = asyncHandler(async (req, res) => {
+const getProduct = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   // Attempt to find the product by ID, populating the Supplier and category fields if they are references to other schemas
   const product = await productModel
@@ -124,7 +121,7 @@ const getProduct = asyncHandler(async (req, res) => {
 
   // If the product is not found, return a 404 error
   if (!product) {
-    return res.status(404).json({ message: "Product not found" });
+    return next(new AppError("Product not found", 404));
   }
 
   // Function to generate signed URLs for photos of a product
@@ -174,7 +171,7 @@ const getProduct = asyncHandler(async (req, res) => {
 });
 
 // get all products
-const getAllProducts = asyncHandler(async (req, res) => {
+const getAllProducts = asyncHandler(async (req, res, next) => {
   const productCount = await productModel.countDocuments();
   const products = await productModel
     .find({})
@@ -221,20 +218,18 @@ const getAllProducts = asyncHandler(async (req, res) => {
 });
 
 // Get photo controller
-const getPhoto = asyncHandler(async (req, res) => {
+const getPhoto = asyncHandler(async (req, res, next) => {
   const { id } = req.params; // Get the product ID from the request parameters
   const product = await productModel.findById(id); // Find the product by its ID
 
   // If no product is found, return a 404 error
   if (!product) {
-    return res.status(404).json({ message: "Product not found" });
+    return next(new AppError("Product not found", 404));
   }
 
   // If the product has no photos, return a 404 error
   if (!product.photos || product.photos.length === 0) {
-    return res
-      .status(404)
-      .json({ message: "No photos found for this product" });
+    return next(new AppError("No photos found for this product", 404));
   }
 
   // Generating signed URLs for each photo
@@ -257,7 +252,7 @@ const getPhoto = asyncHandler(async (req, res) => {
 });
 
 //get Product by supplier
-const getProductBySuppplier = asyncHandler(async (req, res) => {
+const getProductBySuppplier = asyncHandler(async (req, res, next) => {
   const { id: supplierID } = req.params;
   console.log("supplierId :", supplierID);
 
@@ -293,13 +288,13 @@ const getProductBySuppplier = asyncHandler(async (req, res) => {
 });
 
 // Delete product controller
-const deleteProduct = asyncHandler(async (req, res) => {
+const deleteProduct = asyncHandler(async (req, res, next) => {
   const productId = req.params.id;
 
   // Retrieve the product to get the list of photos
   const product = await productModel.findById(productId);
   if (!product) {
-    return res.status(404).json({ message: "Product not found" });
+    return next(new AppError("Product not found", 404));
   }
 
   // Check if there are photos to delete
@@ -339,11 +334,9 @@ const deleteProduct = asyncHandler(async (req, res) => {
 });
 
 //update product controller
-const updateProduct = asyncHandler(async (req, res) => {
+const updateProduct = asyncHandler(async (req, res, next) => {
   if (req.fields) {
   }
-  console.log(req.files);
-  console.log(req.fields);
   const { id } = req.params;
   const updateData = req.fields; // Assuming this contains all other product fields to update
 
