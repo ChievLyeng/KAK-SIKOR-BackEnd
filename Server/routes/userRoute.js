@@ -13,6 +13,7 @@ const {
   verifyOTP,
   resetNewPassword,
   logoutUser,
+  refreshToken,
 } = require("../controller/userController");
 const requireSignIn = require("../middlewares/authMiddleware").requireSignIn;
 const passport = require("passport");
@@ -32,6 +33,9 @@ router.post("/forgot-password", forgotPassword);
 router.post("/verify-otp", verifyOTP);
 router.post("/reset-password", resetNewPassword);
 router.get("/logout/:id", logoutUser);
+
+// Route to trigger token refresh
+router.post("/refresh-token", refreshToken);
 
 // Route to initiate Google OAuth
 router.get(

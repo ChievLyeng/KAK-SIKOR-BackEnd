@@ -1,6 +1,7 @@
 const passport = require("passport");
 require("dotenv").config();
 const User = require("../models/userModel");
+const SessionToken = require("../models/sessionModel");
 
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
 

@@ -3,9 +3,11 @@ const Schema = mongoose.Schema;
 
 const sessionSchema = new Schema({
   userId: { type: String, required: true },
-  accessToken: { type: String, required: true },
-  refreshToken: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now },
+  accessToken: { type: String },
+  refreshToken: { type: String },
+  googleAccessToken: { type: String },
+  googleRefreshToken: { type: String },
+  createdAt: { type: String, default: new Date().toLocaleString() },
 });
 
 const SessionToken = mongoose.model("SessionToken", sessionSchema);

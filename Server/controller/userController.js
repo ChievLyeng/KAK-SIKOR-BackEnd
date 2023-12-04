@@ -50,16 +50,14 @@ const createSendToken = async (user, statusCode, res) => {
     // Store tokens in the database
     await saveTokensToDB(user._id, token, refreshToken);
 
-    // For simplicity, you can set the refresh token as an HttpOnly cookie
-    const refreshTokenCookieOptions = {
-      expires: new Date(
-        Date.now() + parseInt(process.env.REFRESH_TOKEN_COOKIE_EXPIRES_IN)
-      ),
-      httpOnly: true,
-    };
+    // Log the token for debugging purposes
+    console.log("Setting accessToken cookie:", token);
 
+    // Set the accessToken cookie
     res.cookie("accessToken", token, { httpOnly: true });
-    res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
+
+    // Set the refreshToken cookie
+    res.cookie("refreshToken", refreshToken, { httpOnly: true });
 
     // remove password from output
     user.password = undefined;
@@ -134,6 +132,39 @@ const registerUser = async (req, res) => {
     res
       .status(400)
       .json({ error: "Failed to register user. Please try again." });
+  }
+};
+
+//refresh access token
+const refreshToken = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(401).json({ error: "Refresh token is missing" });
+  }
+
+  try {
+    // Verify the refresh token
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const newAccessToken = jwt.sign(
+      { id: decoded.id },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRES_IN,
+      }
+    );
+
+    // Update the access token in the database
+    await SessionToken.findOneAndUpdate(
+      { userId: decoded.id },
+      { accessToken: newAccessToken }
+    );
+
+    // Send the new access token to the client
+    res.cookie("accessToken", newAccessToken, { httpOnly: true });
+    res.status(200).json({ message: "Access token refreshed successfully" });
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid refresh token" });
   }
 };
 
@@ -441,9 +472,34 @@ const updatePassword = async (req, res) => {
       );
 
       if (matchingEntry) {
-        const timestamp = new Date(matchingEntry.timestamp).toLocaleString();
+        const entryTimestamp = new Date(matchingEntry.timestamp);
+        const currentTimestamp = new Date();
+
+        // Calculate the time difference in milliseconds
+        const timeDifference = currentTimestamp - entryTimestamp;
+
+        // Calculate the duration in days, hours, and minutes
+        const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor(
+          (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        const minutes = Math.floor(
+          (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
+        );
+
+        let durationMessage = "";
+
+        // Build the dynamic duration message
+        if (days > 0) {
+          durationMessage += `${days} day${days > 1 ? "s" : ""}`;
+        } else if (hours > 0) {
+          durationMessage += `${hours} hour${hours > 1 ? "s" : ""}`;
+        } else {
+          durationMessage += `${minutes} minute${minutes > 1 ? "s" : ""}`;
+        }
+
         return res.status(400).json({
-          error: `Cannot use the same old password as the one created on ${timestamp}`,
+          error: `Cannot use the same old password as the one created ${durationMessage} ago`,
         });
       }
     }
@@ -603,4 +659,5 @@ module.exports = {
   verifyOTP,
   resetNewPassword,
   logoutUser,
+  refreshToken,
 };

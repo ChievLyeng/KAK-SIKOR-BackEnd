@@ -114,10 +114,10 @@ const userSchema = new mongoose.Schema(
       default: "active",
     },
     lastLogin: {
-      type: Date,
-      default: Date.now,
+      type: String,
+      default: new Date().toLocaleString(),
     },
-    passwordChangedAt: { type: Date },
+    passwordChangedAt: { type: String, default: new Date().toLocaleString() },
     passwordHistory: [
       {
         password: {
@@ -125,7 +125,8 @@ const userSchema = new mongoose.Schema(
           required: true,
         },
         timestamp: {
-          type: Date,
+          type: String,
+          default: new Date().toLocaleString(),
         },
       },
     ],
@@ -145,8 +146,7 @@ userSchema.pre("save", async function (next) {
   // Delete passwordConfirm field
   this.confirmPassword = undefined;
 
-  // Update passwordChangedAt
-  this.passwordChangedAt = Date.now() - 1000;
+  this.passwordChangedAt = new Date().toLocaleString();
 
   next();
 });
