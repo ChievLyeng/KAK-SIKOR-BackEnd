@@ -26,6 +26,9 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
+
+
 // api end point
 app.use("/api/v1/reviews", ReviewRoute);
 app.use("/api/v1/users", userRoute);
