@@ -14,6 +14,7 @@ const {
   resetNewPassword,
   logoutUser,
   refreshToken,
+  createSendToken,
 } = require("../controller/userController");
 const requireSignIn = require("../middlewares/authMiddleware").requireSignIn;
 const passport = require("passport");
@@ -46,10 +47,13 @@ router.get(
 // Callback route after Google has authenticated the user
 router.get(
   "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/" }),
+  passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
-    // Custom response after successful authentication
-    res.send("Successfully logged in with Google!");
+    // If authentication is successful, generate and send a token
+    const user = req.user; // Assuming the authenticated user is stored in req.user
+
+    // Generate and send a token
+    createSendToken(user, 200, res);
   }
 );
 

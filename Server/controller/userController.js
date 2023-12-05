@@ -155,15 +155,20 @@ const refreshToken = async (req, res) => {
     );
 
     // Update the access token in the database
-    await SessionToken.findOneAndUpdate(
+    const updatedSessionToken = await SessionToken.findOneAndUpdate(
       { userId: decoded.id },
-      { accessToken: newAccessToken }
+      { accessToken: newAccessToken },
+      { new: true } // Return the updated document
     );
+
+    // Log the updated session token for debugging
+    console.log("Updated Session Token:", updatedSessionToken);
 
     // Send the new access token to the client
     res.cookie("accessToken", newAccessToken, { httpOnly: true });
     res.status(200).json({ message: "Access token refreshed successfully" });
   } catch (err) {
+    console.error("Refresh Token Error:", err);
     return res.status(401).json({ error: "Invalid refresh token" });
   }
 };
@@ -670,4 +675,5 @@ module.exports = {
   resetNewPassword,
   logoutUser,
   refreshToken,
+  createSendToken,
 };
