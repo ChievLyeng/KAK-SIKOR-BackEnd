@@ -30,7 +30,7 @@ const uploadToS3 = asyncHandler(async (file) => {
   return uploadResult.Location; // Return the S3 URL of the uploaded file
 });
 
-const deletePhotosFromS3 = asyncHandler(async (urls = [], next) => {
+const deletePhotosFromS3 = asyncHandler(async (urls = []) => {
   const deletePromises = urls.map((url) => {
     const Key = url.split("/").slice(-1)[0]; // Extract the object key from the URL
     const params = {
@@ -63,8 +63,16 @@ const createProduct = asyncHandler(async (req, res, next) => {
 
   // Validate required fields
   if (!name || !description || !price || !category || !quantity || !Supplier) {
-    return next(new AppError("All fields are require.",400));
+    return next(new AppError("All fields must be provided", 404));
   }
+
+  // productModel.collection.dropIndex({ Supplier: 1 }, (err, result) => {
+  //   if (err) {
+  //     console.error("Error dropping index:", err);
+  //   } else {
+  //     console.log("Unique index on Supplier dropped successfully");
+  //   }
+  // });
 
   // Slugify the name for URL-friendly slug
   const slug = slugify(name);
@@ -121,7 +129,7 @@ const getProduct = asyncHandler(async (req, res, next) => {
 
   // If the product is not found, return a 404 error
   if (!product) {
-    return next(new AppError("Product not found", 404));
+    return next(new AppError("Product Not Found !!"), 404);
   }
 
   // Function to generate signed URLs for photos of a product
@@ -171,7 +179,7 @@ const getProduct = asyncHandler(async (req, res, next) => {
 });
 
 // get all products
-const getAllProducts = asyncHandler(async (req, res, next) => {
+const getAllProducts = asyncHandler(async (req, res) => {
   const productCount = await productModel.countDocuments();
   const products = await productModel
     .find({})
@@ -217,42 +225,8 @@ const getAllProducts = asyncHandler(async (req, res, next) => {
   });
 });
 
-// Get photo controller
-const getPhoto = asyncHandler(async (req, res, next) => {
-  const { id } = req.params; // Get the product ID from the request parameters
-  const product = await productModel.findById(id); // Find the product by its ID
-
-  // If no product is found, return a 404 error
-  if (!product) {
-    return next(new AppError("Product not found", 404));
-  }
-
-  // If the product has no photos, return a 404 error
-  if (!product.photos || product.photos.length === 0) {
-    return next(new AppError("No photos found for this product", 404));
-  }
-
-  // Generating signed URLs for each photo
-  const signedUrls = await Promise.all(
-    product.photos.map(async (photo) => {
-      const signedUrl = await s3.getSignedUrlPromise("getObject", {
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: photo.url.split("/").pop(), // Extract the key from the URL
-        Expires: 3600, // URL expiration time in seconds
-      });
-      return { url: signedUrl, _id: photo._id }; // Return an object with the signed URL and _id
-    })
-  );
-
-  // Respond with the signed photo URLs
-  res.status(200).json({
-    message: "Signed URLs generated successfully",
-    signedUrls,
-  });
-});
-
 //get Product by supplier
-const getProductBySuppplier = asyncHandler(async (req, res, next) => {
+const getProductBySuppplier = asyncHandler(async (req, res) => {
   const { id: supplierID } = req.params;
   console.log("supplierId :", supplierID);
 
@@ -294,7 +268,7 @@ const deleteProduct = asyncHandler(async (req, res, next) => {
   // Retrieve the product to get the list of photos
   const product = await productModel.findById(productId);
   if (!product) {
-    return next(new AppError("Product not found", 404));
+    return next(new AppError("Product not found"), 404);
   }
 
   // Check if there are photos to delete
@@ -335,8 +309,8 @@ const deleteProduct = asyncHandler(async (req, res, next) => {
 
 //update product controller
 const updateProduct = asyncHandler(async (req, res, next) => {
-  if (req.fields) {
-  }
+  console.log(req.files);
+  console.log(req.fields);
   const { id } = req.params;
   const updateData = req.fields; // Assuming this contains all other product fields to update
 
@@ -379,7 +353,6 @@ module.exports = {
   createProduct,
   getProduct,
   getAllProducts,
-  getPhoto,
   getProductBySuppplier,
   deleteProduct,
   updateProduct,

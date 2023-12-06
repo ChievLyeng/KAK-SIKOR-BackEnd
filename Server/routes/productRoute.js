@@ -4,7 +4,6 @@ const {
   getProduct,
   getAllProducts,
   getProductBySuppplier,
-  getPhoto,
   deleteProduct,
   updateProduct,
 } = require("../controller/productController");
@@ -26,7 +25,6 @@ router
 router
   .route("/:id")
   .get(getProduct)
-  .get(getPhoto)
   .get(getProductBySuppplier)
   .delete(deleteProduct)
   .post(formidable(formOptions), updateProduct);
