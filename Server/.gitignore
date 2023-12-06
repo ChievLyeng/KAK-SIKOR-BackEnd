@@ -13,5 +13,5 @@ pids
 *.seed
 
 # Dependency directories
-node_modules
+node_modules/
 jspm_packages
