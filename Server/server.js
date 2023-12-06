@@ -4,9 +4,7 @@ const mongoose = require("mongoose");
 const productRoute = require("./routes/productRoute");
 const categoryRoute = require("./routes/categoryRoute");
 const userRoute = require("./routes/userRoute");
-const cartRoutes = require("./routes/cartRoute.js");
 const orderRoute = require("./routes/orderRoute");
-const orderHistoryRoute = require("./routes/orderHistoryRoute");
 const cors = require("cors");
 const morgan = require("morgan");
 const passport = require("passport");
@@ -48,9 +46,7 @@ app.use("/reviews", ReviewRoute);
 app.use("/users", userRoute);
 app.use("/products", productRoute);
 app.use("/category", categoryRoute);
-app.use("/api", cartRoutes);
 app.use("/orders", orderRoute);
-app.use("/orderHistories", orderHistoryRoute);
 
 // connect to db
 mongoose

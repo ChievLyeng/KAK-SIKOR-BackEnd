@@ -1,21 +1,25 @@
 const express = require("express");
 const {
   registerUser,
-  loginUser,
   verifyEmail,
   resendVerificationEmail,
   getAllUsers,
   getAllSuppliers,
   deleteUser,
   updateUser,
-  updatePassword,
+} = require("../controller/userController");
+const {
+  loginUser,
+  refreshToken,
+  createSendToken,
+  logoutUser,
+} = require("../controller/authController");
+const {
   forgotPassword,
   verifyOTP,
   resetNewPassword,
-  logoutUser,
-  refreshToken,
-  createSendToken,
-} = require("../controller/userController");
+  updatePassword,
+} = require("../controller/passwordController");
 const requireSignIn = require("../middlewares/authMiddleware").requireSignIn;
 const passport = require("passport");
 
