@@ -17,10 +17,15 @@ require("dotenv").config();
 const ReviewRoute = require("./routes/reviewRoute");
 const { findOneAndUpdate } = require("./models/categoryModel");
 
+const connectDB = require('./config/DB')
 dotenv.config({ path: "./config.env" });
 
-// express app
-const app = express();
+// handle uncaugt exception error
+process.on("uncaughtException", (err) => {
+  console.log("UNCAUGHT EXCEPTION!  ");
+  console.log(err.name, err.message);
+  process.exit(1);
+});
 
 // middleware
 app.use(cors());
@@ -47,16 +52,22 @@ app.use("/users", userRoute);
 app.use("/products", productRoute);
 app.use("/category", categoryRoute);
 app.use("/orders", orderRoute);
+// app
+const app = require("./app");
 
-// connect to db
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    // listen for requests
-    app.listen(process.env.PORT, () => {
-      console.log("Connected to MongoDB & Listening on port", process.env.PORT);
-    });
-  })
-  .catch((error) => {
-    console.error("Error connecting to MongoDB:", error);
+// db
+connectDB();
+
+const PORT =process.env.PORT || 5000
+const server = app.listen(PORT, () => {
+  console.log("Connected to MongoDB & Listening on port", process.env.PORT);
+});
+
+// handle unhandleRejection error
+process.on("unhandledRejection", (err) => {
+  console.log(err.name, err.message);
+  console.log("UNHANDLED REJECTION! Shutting down...");
+  server.close(() => {
+    process.exit(1);
   });
+});

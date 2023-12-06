@@ -5,6 +5,7 @@ const {
   resendVerificationEmail,
   getAllUsers,
   getAllSuppliers,
+  getSuppliersById,
   deleteUser,
   updateUser,
 } = require("../controller/userController");
@@ -27,7 +28,7 @@ const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.get("/users", getAllUsers);
+router.get("/", getAllUsers);
 router.get("/suppliers", getAllSuppliers);
 router.post("/update/:id", requireSignIn, updateUser);
 router.post("/update-password/:id", requireSignIn, updatePassword);

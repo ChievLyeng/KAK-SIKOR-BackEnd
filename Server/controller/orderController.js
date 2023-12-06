@@ -1,103 +1,85 @@
 const Order = require("../models/orderModel");
+const asyncHandler = require("../utils/asyncHandler");
 
-// Create a new order
-const createOrder = async (req, res) => {
-  try {
-    const { orderBy, products, deliveryAddress, paymentIntent, status } =
-      req.body;
-    if (!orderBy || !products || !deliveryAddress) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-    const order = new Order({
-      orderBy,
-      products,
-      deliveryAddress,
-      paymentIntent,
-      status,
-    });
-    await order.save();
-    res.status(201).json({ message: "Order Created", order });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to create order" });
+// @desc    Get all orders
+// @route   GET /api/orders
+// @access  Public
+const getOrders = asyncHandler(async (req, res, next) => {
+  const orders = await Order.find().populate("user", "name email");
+  res.json(orders);
+
+});
+
+// @desc    Get single order
+// @route   GET /api/orders/:id
+// @access  Public
+const getOrderById = asyncHandler(async (req, res,next) => {
+
+  const order = await Order.findById(req.params.id).populate(
+    "user",
+    "name email"
+  );
+
+  if (!order) {
+    return next( new AppError('Order not found.',404))
   }
-};
 
-// Get all orders
-const getAllOrders = async (req, res) => {
-  try {
-    const orders = await Order.find(req.body);
-    if (!orders || orders.length === 0) {
-      return res.status(404).json({ message: "No orders found" });
-    }
+  res.json(order);
+});
 
-    res.status(200).json({ orders });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch orders" });
+// @desc    Create an order
+// @route   POST /api/orders
+// @access  Public
+const createOrder = asyncHandler( async (req, res, next) => {
+
+  const order = new Order(req.body);
+  const createdOrder = await order.save();
+  res.status(201).json(createdOrder);
+});
+
+// @desc    Update an order to paid
+// @route   PUT /api/orders/:id/pay
+// @access  Public
+const updateOrderToPaid = asyncHandler( async (req, res, next) => {
+
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    return next( new AppError('Order not found.',404));
   }
-};
 
-// Get an order by ID
-const getOrderById = async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id).populate("paymentIntent");
-    if (!order) {
-      return res
-        .status(404)
-        .json({ message: `Order not found with id: ${req.params.id}` });
-    }
+  order.isPaid = true;
+  order.paidAt = Date.now();
+  order.paymentResult = {
+    id: req.body.id,
+    status: req.body.status,
+    update_time: req.body.update_time,
+    email_address: req.body.email_address,
+  };
 
-    res.status(200).json({ order });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch order" });
+  const updatedOrder = await order.save();
+  res.json(updatedOrder);
+})
+
+// @desc    Delete an order
+// @route   DELETE /api/orders/:id
+// @access  Public
+const deleteOrder = asyncHandler( async (req, res, next) => {
+
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    return next( new AppError('Order not found.',404));
   }
-};
 
-// Update an order
-const updateOrderStatus = async (req, res) => {
-  try {
-    const { paymentIntent, status } = req.body;
-    if ((!status, !paymentIntent)) {
-      return res
-        .status(400)
-        .json({ error: "Missing required field: status and paymentIntent" });
-    }
-    const order = await Order.findByIdAndUpdate(
-      req.params.id,
-      { paymentIntent, status },
-      { new: true }
-    );
-    if (!order) {
-      return res
-        .status(404)
-        .json({ message: `Order not found with id: ${req.params.id}` });
-    }
-
-    res.status(200).json({ message: "Order modified", order });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to update order" });
-  }
-};
-
-// Delete an order
-const deleteOrder = async (req, res) => {
-  try {
-    const order = await Order.findByIdAndDelete(req.params.id);
-    if (!order) {
-      return res
-        .status(404)
-        .json({ message: `Order not found with id: ${req.params.id}` });
-    }
-
-    res.status(200).json({ message: "Order deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to delete order" });
-  }
-};
+  await order.remove();
+  res.json({ message: "Order removed" });
+})
 
 module.exports = {
-  createOrder,
-  getAllOrders,
+  getOrders,
   getOrderById,
-  updateOrderStatus,
+  createOrder,
+  updateOrderToPaid,
   deleteOrder,
 };

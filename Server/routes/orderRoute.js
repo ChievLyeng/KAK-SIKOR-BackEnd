@@ -1,26 +1,19 @@
 const express = require("express");
 const router = express.Router();
 const {
-  createOrder,
-  getAllOrders,
+  getOrders,
   getOrderById,
-  updateOrderStatus,
+  createOrder,
+  updateOrderToPaid,
   deleteOrder,
 } = require("../controller/orderController");
 
-// Create an order
-router.post("/create-order", createOrder);
-
-// Get all orders
-router.get("/", getAllOrders);
-
-// Get a single order
+// Routes
+router.get("/", getOrders);
 router.get("/:id", getOrderById);
-
-// Update an order
-router.put("/:id", updateOrderStatus);
-
-// Delete an order
+router.post("/", createOrder);
+router.put("/:id/pay", updateOrderToPaid);
 router.delete("/:id", deleteOrder);
+
 
 module.exports = router;

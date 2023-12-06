@@ -7,10 +7,6 @@ const supplierSchema = User.discriminator(
     farmName: {
       type: String,
     },
-    products: {
-      type: [String],
-      required: [true, "Products are required."],
-    },
     harvestSchedule: {
       type: Date,
     },

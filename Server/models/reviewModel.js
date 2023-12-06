@@ -7,12 +7,12 @@ const reviewSchema = new Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: [true,'User is require.'],
     },
     product: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
-      required: true,
+      required: [true,'Review must have a product.'],
     },
     description: {
       type: String,
