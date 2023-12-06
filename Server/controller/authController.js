@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/userModel");
+const asyncHandler = require("../utils/asyncHandler");
+const SessionToken = require("../models/sessionModel");
 
 // Access Token
 const signToken = (id) => {
@@ -16,7 +18,7 @@ const signRefreshToken = (id) => {
   });
 };
 
-const saveTokensToDB = async (userId) => {
+const saveTokensToDB = asyncHandler(async (userId) => {
   try {
     const accessToken = await signToken(userId);
     const refreshToken = await signRefreshToken(userId);
@@ -29,47 +31,43 @@ const saveTokensToDB = async (userId) => {
 
     await token.save();
     console.log("Tokens saved to the database");
+    tokensSaved = true;
   } catch (error) {
     console.error("Error saving tokens to the database:", error.message);
   }
-};
+});
 
 // loginUser function
-const loginUser = async (req, res) => {
+const loginUser = asyncHandler(async (req, res) => {
   try {
+    console.log("Login user function called");
+
     const { email, password } = req.body;
 
-    // Find the user based on the email
     const user = await User.findOne({ email });
 
-    // Check if the user exists
     if (!user) {
       return res.status(401).json({ error: "User not found" });
     }
 
-    // Check if the password is correct
     const validPassword = await user.matchPassword(password);
     if (!validPassword) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // Check if the user is verified
     if (!user.verified) {
       return res.status(400).json({
         message: "Please verify your email before logging in.",
       });
     }
 
-    // Reactivate the account if it was previously deactivated
     if (user.status === "inactive") {
       user.status = "active";
 
-      // Additional check for supplier role to avoid repeated approval
       if (user.role === "supplier" && user.supplierStatus !== "active") {
         user.supplierStatus = "active";
       }
 
-      // Update lastLogin
       user.lastLogin = new Date();
       await user.save();
 
@@ -80,40 +78,34 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // Check if the user role is "supplier"
-    if (user.role === "supplier") {
-      // Check if the supplier account is approved by admin
-      if (user.supplierStatus !== "active") {
-        return res.status(401).json({
-          message:
-            "Supplier account is not yet approved by admin. Please wait for approval.",
-        });
-      }
+    if (user.role === "supplier" && user.supplierStatus !== "active") {
+      return res.status(401).json({
+        message:
+          "Supplier account is not yet approved by admin. Please wait for approval.",
+      });
     }
 
-    // Update lastLogin and set status to "active"
     user.lastLogin = new Date();
     user.status = "active";
     await user.save();
 
-    // If verified and approved (for suppliers), use the logInToken function to create the login token
     const token = signToken(user._id);
     createSendToken(user, 200, res);
   } catch (error) {
+    console.error("Login user function error:", error);
     res.status(500).json({ error: error.message });
   }
-};
+});
 
 //refresh access token
-const refreshToken = async (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
+const refreshToken = asyncHandler(async (req, res) => {
+  const { refreshToken } = req.cookies;
 
   if (!refreshToken) {
     return res.status(401).json({ error: "Refresh token is missing" });
   }
 
   try {
-    // Verify the refresh token
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
     const newAccessToken = jwt.sign(
       { id: decoded.id },
@@ -123,26 +115,32 @@ const refreshToken = async (req, res) => {
       }
     );
 
-    // Update the access token in the database
-    const updatedSessionToken = await SessionToken.findOneAndUpdate(
-      { userId: decoded.id },
-      { accessToken: newAccessToken },
-      { new: true } // Return the updated document
-    );
+    // Check if the session token exists before updating
+    const existingSessionToken = await SessionToken.findOne({
+      userId: decoded.id,
+    });
 
-    // Log the updated session token for debugging
-    console.log("Updated Session Token:", updatedSessionToken);
+    if (existingSessionToken) {
+      const updatedSessionToken = await SessionToken.findOneAndUpdate(
+        { userId: decoded.id },
+        { accessToken: newAccessToken },
+        { new: true }
+      );
 
-    // Send the new access token to the client
+      console.log("Updated Session Token:", updatedSessionToken);
+    } else {
+      console.log("Session Token not found for user:", decoded.id);
+    }
+
     res.cookie("accessToken", newAccessToken, { httpOnly: true });
     res.status(200).json({ message: "Access token refreshed successfully" });
   } catch (err) {
     console.error("Refresh Token Error:", err);
     return res.status(401).json({ error: "Invalid refresh token" });
   }
-};
+});
 
-const createSendToken = async (user, statusCode, res) => {
+const createSendToken = asyncHandler(async (user, statusCode, res) => {
   try {
     const token = signToken(user._id);
     const refreshToken = signRefreshToken(user._id);
@@ -174,16 +172,14 @@ const createSendToken = async (user, statusCode, res) => {
     console.error("Error creating and sending tokens:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
-};
+});
 
-const logoutUser = async (req, res) => {
+const logoutUser = asyncHandler(async (req, res) => {
   try {
     const userId = req.params.id;
 
-    // Remove the user's session tokens from the database
     await SessionToken.deleteMany({ userId });
 
-    // Clear the access token and refresh token cookies
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
 
@@ -195,7 +191,7 @@ const logoutUser = async (req, res) => {
     console.error("Logout error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
-};
+});
 
 module.exports = {
   loginUser,

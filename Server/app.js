@@ -9,6 +9,7 @@ const morgan = require("morgan");
 const AppError = require("./utils/appError");
 const GlobalErrorHandler = require("./middlewares/globalErrorhandler");
 const dotenv = require("dotenv");
+const cookieParser = require("cookie-parser");
 dotenv.config({ path: "./config.env" });
 
 // express app
@@ -24,6 +25,7 @@ const corsConfig = {
 app.use(cors(corsConfig));
 app.use(morgan("dev"));
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 // api end point

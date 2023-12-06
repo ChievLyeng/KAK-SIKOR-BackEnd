@@ -21,27 +21,35 @@ const {
   resetNewPassword,
   updatePassword,
 } = require("../controller/passwordController");
-const requireSignIn = require("../middlewares/authMiddleware").requireSignIn;
+const { requireSignIn } = require("../middlewares/authMiddleware");
 const passport = require("passport");
+const passportSetUp = require("../utils/passportSetUp");
 
 const router = express.Router();
 
-router.post("/register", registerUser);
-router.post("/login", loginUser);
-router.get("/", getAllUsers);
-router.get("/suppliers", getAllSuppliers);
-router.post("/update/:id", requireSignIn, updateUser);
-router.post("/update-password/:id", requireSignIn, updatePassword);
-router.delete("/delete/:id", requireSignIn, deleteUser);
-router.get("/:id/verify/:token", verifyEmail);
-router.post("/resend-verification/:id", resendVerificationEmail);
-router.post("/forgot-password", forgotPassword);
-router.post("/verify-otp", verifyOTP);
-router.post("/reset-password", resetNewPassword);
-router.get("/logout/:id", logoutUser);
+// User Routes
+router.route("/").get(getAllUsers);
+router.route("/register").post(registerUser);
+router
+  .route("/:id")
+  .put(requireSignIn, updateUser)
+  .delete(requireSignIn, deleteUser);
+router.route("/suppliers").get(getAllSuppliers);
+router
+  .route("/users/:id/verify/:token")
+  .get(verifyEmail)
+  .post(resendVerificationEmail);
 
-// Route to trigger token refresh
-router.post("/refresh-token", refreshToken);
+// Authentication Routes
+router.route("/login").post(loginUser);
+router.route("/logout/:id").get(logoutUser);
+router.route("/refresh-token").post(refreshToken);
+
+// Password Routes
+router.route("/forgot-password").post(forgotPassword);
+router.route("/verify-otp").post(verifyOTP);
+router.route("/reset-password").post(resetNewPassword);
+router.route("/update-password/:id").post(requireSignIn, updatePassword);
 
 // Route to initiate Google OAuth
 router.get(
@@ -54,8 +62,8 @@ router.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
-    // If authentication is successful, generate and send a token
-    const user = req.user; // Assuming the authenticated user is stored in req.user
+    // Assuming the authenticated user is stored in req.user
+    const { user } = req;
 
     // Generate and send a token
     createSendToken(user, 200, res);

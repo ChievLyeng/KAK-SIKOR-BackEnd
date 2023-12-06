@@ -6,10 +6,11 @@ const crypto = require("crypto");
 const Token = require("../models/tokenModel");
 const bcrypt = require("bcryptjs");
 const SessionToken = require("../models/sessionModel");
+const asyncHandler = require("../utils/asyncHandler");
 
-const registerUser = async (req, res) => {
+const registerUser = asyncHandler(async (req, res) => {
   try {
-    // Check if the supplied fields indicate a supplier
+    // Determine if the user is a supplier
     const isSupplier =
       req.body.farmName ||
       req.body.products ||
@@ -17,15 +18,19 @@ const registerUser = async (req, res) => {
       req.body.isOrganic ||
       req.body.supplierStatus;
 
-    // If it's a supplier, set the role to "supplier"
-    if (isSupplier) {
-      req.body.role = "supplier";
-    }
+    // Set the role based on whether it's a supplier
+    const role = isSupplier ? "supplier" : "user";
 
-    // Use the appropriate model based on the role
-    const userModel = req.body.role === "supplier" ? Supplier : User;
+    // Choose the appropriate model based on the role
+    const userModel = role === "supplier" ? Supplier : User;
 
-    const newUser = new userModel(req.body);
+    // Create a new user instance
+    const newUser = new userModel({
+      ...req.body,
+      role,
+    });
+
+    // Save the user to the database
     const savedUser = await newUser.save();
 
     // Generate a verification token
@@ -46,28 +51,33 @@ const registerUser = async (req, res) => {
         "An email has been sent to your account. Please verify your email before logging in.",
     });
   } catch (error) {
-    if (error.code === 11000) {
-      // Duplicate key error, indicating a duplication of a unique field
-      if (error.keyPattern.email) {
-        return res.status(400).json({ error: "Email is already in use." });
-      }
-      if (error.keyPattern.phoneNumber) {
-        return res
-          .status(400)
-          .json({ error: "Phone number is already in use." });
-      }
-      // Handle other duplicated fields if needed
+    handleRegistrationError(error, res);
+  }
+});
+
+const handleRegistrationError = asyncHandler(async (error, res) => {
+  if (error.code === 11000) {
+    // Duplicate key error, indicating a duplication of a unique field
+    const duplicateField = Object.keys(error.keyPattern)[0];
+
+    if (duplicateField === "email") {
+      return res.status(400).json({ error: "Email is already in use." });
     }
 
-    console.error("User registration error:", error);
-    res
-      .status(400)
-      .json({ error: "Failed to register user. Please try again." });
+    if (duplicateField === "phoneNumber") {
+      return res.status(400).json({ error: "Phone number is already in use." });
+    }
+
+    // Handle other duplicated fields if needed
+    return res.status(400).json({ error: "Duplicate field violation." });
   }
-};
+
+  console.error("User registration error:", error);
+  res.status(400).json({ error: "Failed to register user. Please try again." });
+});
 
 //Verify Email
-const verifyEmail = async (req, res) => {
+const verifyEmail = asyncHandler(async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.params.id });
 
@@ -112,10 +122,10 @@ const verifyEmail = async (req, res) => {
       .status(500)
       .send({ message: "Internal Server Error", error: error.message });
   }
-};
+});
 
 // Add this function to your userController.js file
-const resendVerificationEmail = async (req, res) => {
+const resendVerificationEmail = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
     console.log("Resend Verification Request for User ID:", id);
@@ -159,10 +169,9 @@ const resendVerificationEmail = async (req, res) => {
       .status(500)
       .json({ error: "Internal Server Error", message: error.message });
   }
-};
+});
 
-// Get All users
-const getAllUsers = async (req, res) => {
+const getAllUsers = asyncHandler(async (req, res) => {
   try {
     const userCount = await User.countDocuments();
     const users = await User.find();
@@ -173,10 +182,9 @@ const getAllUsers = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-};
+});
 
-// get all suppliers
-const getAllSuppliers = async (req, res) => {
+const getAllSuppliers = asyncHandler(async (req, res) => {
   try {
     const supplierCount = await Supplier.countDocuments({ role: "supplier" });
     const suppliers = await User.find({ role: "supplier" });
@@ -187,10 +195,10 @@ const getAllSuppliers = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-};
+});
 
 //get supplier By Id
-const getSuppliersById = async (req, res) => {
+const getSuppliersById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   try {
     const supplier = await User.findById(id);
@@ -200,10 +208,10 @@ const getSuppliersById = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-};
+});
 
 // delete user
-const deleteUser = async (req, res) => {
+const deleteUser = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
     const { password } = req.body;
@@ -248,10 +256,10 @@ const deleteUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-};
+});
 
 // update user
-const updateUser = async (req, res) => {
+const updateUser = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
     const { email, password, ...updateFields } = req.body;
@@ -289,7 +297,7 @@ const updateUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-};
+});
 
 module.exports = {
   registerUser,

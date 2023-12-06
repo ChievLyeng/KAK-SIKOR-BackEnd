@@ -9,15 +9,16 @@ const cors = require("cors");
 const morgan = require("morgan");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
-const passportConfig = require("./utils/passportSetUp");
+//const passportConfig = require("./utils/passportSetUp");
 const session = require("express-session");
-
+// app
+const app = require("./app");
 require("dotenv").config();
 
 const ReviewRoute = require("./routes/reviewRoute");
 const { findOneAndUpdate } = require("./models/categoryModel");
 
-const connectDB = require('./config/DB')
+const connectDB = require("./config/DB");
 dotenv.config({ path: "./config.env" });
 
 // handle uncaugt exception error
@@ -52,13 +53,11 @@ app.use("/users", userRoute);
 app.use("/products", productRoute);
 app.use("/category", categoryRoute);
 app.use("/orders", orderRoute);
-// app
-const app = require("./app");
 
 // db
 connectDB();
 
-const PORT =process.env.PORT || 5000
+const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log("Connected to MongoDB & Listening on port", process.env.PORT);
 });
