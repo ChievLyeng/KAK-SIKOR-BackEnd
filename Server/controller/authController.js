@@ -26,29 +26,20 @@ const signRefreshToken = (id) => {
 // @desc    Save access and refresh tokens to the database
 // @param   {string} userId - User ID
 const saveTokensToDB = asyncHandler(async (userId) => {
-  let tokensSaved = false;
+  const accessToken = await signToken(userId);
+  const refreshToken = await signRefreshToken(userId);
 
-  try {
-    const accessToken = await signToken(userId);
-    const refreshToken = await signRefreshToken(userId);
+  const token = new SessionToken({
+    userId,
+    accessToken,
+    refreshToken,
+  });
 
-    const token = new SessionToken({
-      userId,
-      accessToken,
-      refreshToken,
-    });
+  await token.save();
+  console.log("Tokens saved to the database");
 
-    await token.save();
-    console.log("Tokens saved to the database");
-    tokensSaved = true;
-  } catch (error) {
-    console.error("Error saving tokens to the database:", error.message);
-    // Return an AppError
-    return new AppError("Error saving tokens to the database", 500);
-  }
-
-  // Return the success/failure status
-  return tokensSaved;
+  // Return the success status
+  return true;
 });
 
 // @desc    Log in a user
