@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: Number,
-      required: [true, "Phone number is required."],
+      // required: [true, "Phone number is required."],
       unique: true,
       validate: {
         validator: function (value) {
@@ -130,6 +130,11 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+    authMethod: {
+      type: String,
+      enum: ["email", "google"],
+      default: "email",
+    },
   },
   {
     timestamps: true,

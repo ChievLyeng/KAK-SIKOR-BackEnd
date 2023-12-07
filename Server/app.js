@@ -10,7 +10,10 @@ const AppError = require("./utils/appError");
 const GlobalErrorHandler = require("./middlewares/globalErrorhandler");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const passport = require("passport");
 dotenv.config({ path: "./config.env" });
+require("./utils/passportSetUp");
 
 // express app
 const app = express();
@@ -27,6 +30,19 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
+
+// Use express-session middleware
+app.use(
+  session({
+    secret: "your-secret-key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+// Initialize Passport and restore authentication state if available from the session
+app.use(passport.initialize());
+app.use(passport.session());
 
 // api end point
 app.use("/api/v1/reviews", ReviewRoute);

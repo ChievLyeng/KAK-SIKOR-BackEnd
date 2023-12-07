@@ -103,8 +103,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/auth/refresh-token
 // @access  Public
 const refreshToken = asyncHandler(async (req, res) => {
-  const { refreshToken } = req.cookies;
-
+  const { refreshToken } = req.Cookies;
   if (!refreshToken) {
     throw new AppError("Refresh token is missing", 401);
   }
@@ -172,17 +171,18 @@ const createSendToken = asyncHandler(async (user, statusCode, res, next) => {
 const logoutUser = asyncHandler(async (req, res, next) => {
   const userId = req.params.id;
 
-  await SessionToken.deleteMany({ userId });
-
+  // Clear cookies
   res.clearCookie("accessToken");
   res.clearCookie("refreshToken");
 
+  // Simulate asynchronous operation
+  await SessionToken.deleteMany({ userId });
+
+  // Send a successful JSON response
   res.status(200).json({
     status: "success",
     message: "User logged out successfully",
   });
-
-  return next(new AppError("Internal Server Error", 500));
 });
 
 module.exports = {
