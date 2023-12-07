@@ -25,7 +25,7 @@ passport.use(
       clientID:
         "75543058548-pf22sek6rlu504d94iotgarhqm9vs7lb.apps.googleusercontent.com",
       clientSecret: "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",
-      callbackURL: "http://localhost:8000/users/auth/google/callback",
+      callbackURL: "http://localhost:8000/api/v1/users/auth/google/callback",
       passReqToCallback: true,
     },
     async function (request, accessToken, refreshToken, profile, done) {

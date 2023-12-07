@@ -23,22 +23,20 @@ const {
 } = require("../controller/passwordController");
 const { requireSignIn } = require("../middlewares/authMiddleware");
 const passport = require("passport");
-const passportSetUp = require("../utils/passportSetUp");
 
 const router = express.Router();
 
 // User Routes
 router.route("/").get(getAllUsers);
+router.route("/suppliers").get(getAllSuppliers);
 router.route("/register").post(registerUser);
 router
   .route("/:id")
   .put(requireSignIn, updateUser)
   .delete(requireSignIn, deleteUser);
 router.route("/suppliers").get(getAllSuppliers);
-router
-  .route("/users/:id/verify/:token")
-  .get(verifyEmail)
-  .post(resendVerificationEmail);
+router.route("/:id/verify/:token").get(verifyEmail);
+router.route("/:id/verify").post(resendVerificationEmail);
 
 // Authentication Routes
 router.route("/login").post(loginUser);
