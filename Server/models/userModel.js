@@ -104,6 +104,32 @@ const userSchema = new mongoose.Schema(
         message: "Passwords do not match.",
       },
     },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
+    lastLogin: {
+      type: String,
+      default: new Date().toLocaleString(),
+    },
+    passwordChangedAt: { type: String, default: new Date().toLocaleString() },
+    passwordHistory: [
+      {
+        password: {
+          type: String,
+          required: true,
+        },
+        timestamp: {
+          type: String,
+          default: new Date().toLocaleString(),
+        },
+      },
+    ],
   },
   {
     timestamps: true,
@@ -119,6 +145,9 @@ userSchema.pre("save", async function (next) {
 
   // Delete passwordConfirm field
   this.confirmPassword = undefined;
+
+  this.passwordChangedAt = new Date().toLocaleString();
+
   next();
 });
 
