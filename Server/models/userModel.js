@@ -140,15 +140,22 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
 // Hash password before saving
 userSchema.pre("save", async function (next) {
   // Only run this function if password was actually modified
   if (!this.isModified("password")) return next();
 
-  this.password = await bcrypt.hash(this.password, 12);
+  const hashedPassword = await bcrypt.hash(this.password, 12);
 
-  // Delete passwordConfirm field
+  // Save the new hashed password to the password history
+  this.passwordHistory.push({
+    password: hashedPassword,
+    timestamp: new Date().toLocaleString(),
+  });
+
+  this.password = hashedPassword;
+
+  // Delete confirmPassword field
   this.confirmPassword = undefined;
 
   this.passwordChangedAt = new Date().toLocaleString();
@@ -160,7 +167,6 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
-
 const User = mongoose.model("User", userSchema);
 
 module.exports = User;
