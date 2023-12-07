@@ -2,14 +2,14 @@ const express = require("express");
 const productRoute = require("./routes/productRoute");
 const categoryRoute = require("./routes/categoryRoute");
 const userRoute = require("./routes/userRoute");
-const ReviewRoute = require("./routes/reviewRoute");
+const reviewRoute = require("./routes/reviewRoute");
 const orderRoute = require("./routes/orderRoute");
+const commentRoute = require("./routes/commentRoute");
 const cors = require("cors");
 const morgan = require("morgan");
 const AppError = require("./utils/appError");
 const GlobalErrorHandler = require("./middlewares/globalErrorhandler");
 const dotenv = require("dotenv");
-const cookieParser = require("cookie-parser");
 dotenv.config({ path: "./config.env" });
 
 // express app
@@ -25,11 +25,11 @@ const corsConfig = {
 app.use(cors(corsConfig));
 app.use(morgan("dev"));
 app.use(express.json());
-app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 // api end point
-app.use("/api/v1/reviews", ReviewRoute);
+app.use("/api/v1/reviews", reviewRoute);
+app.use("/api/v1/comments", commentRoute);
 app.use("/api/v1/users", userRoute);
 app.use("/api/v1/products", productRoute);
 app.use("/api/v1/categories", categoryRoute);
