@@ -12,4 +12,4 @@ router.route("/:reviewId/").post(createComment).get(getComments);
 
 router.route("/:commentId").put(updateComment).delete(deleteComment);
 
-module.exports = router;comment
+module.exports = router
