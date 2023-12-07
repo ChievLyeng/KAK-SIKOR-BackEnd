@@ -2,21 +2,63 @@ const passport = require("passport");
 require("dotenv").config();
 const User = require("../models/userModel");
 const SessionToken = require("../models/sessionModel");
+const validator = require("validator");
 
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
 
 // Function to generate a secure password
 function generatePassword(length = 12) {
-  const characters =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+  // Define character sets
+  const lowercaseChars = "abcdefghijklmnopqrstuvwxyz";
+  const uppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const numericChars = "0123456789";
+  const symbolChars = "!@#$%^&*()_+";
+
+  // Combine all character sets
+  const allChars = lowercaseChars + uppercaseChars + numericChars + symbolChars;
+
+  // Initialize password array
   const passwordArray = [];
 
-  for (let i = 0; i < length; i++) {
+  // Helper function to get a random character from a given character set
+  function getRandomChar(characters) {
     const randomIndex = Math.floor(Math.random() * characters.length);
-    passwordArray.push(characters.charAt(randomIndex));
+    return characters.charAt(randomIndex);
   }
 
+  // Add at least one character from each character set
+  passwordArray.push(getRandomChar(lowercaseChars));
+  passwordArray.push(getRandomChar(uppercaseChars));
+  passwordArray.push(getRandomChar(numericChars));
+  passwordArray.push(getRandomChar(symbolChars));
+
+  // Generate the rest of the password
+  for (let i = passwordArray.length; i < length; i++) {
+    passwordArray.push(getRandomChar(allChars));
+  }
+
+  // Shuffle the password array to randomize the order
+  passwordArray.sort(() => Math.random() - 0.5);
+
   return passwordArray.join("");
+}
+
+// Function to generate a unique phone number
+async function generateUniquePhoneNumber() {
+  const characters = "0123456789";
+  let phoneNumber;
+
+  do {
+    phoneNumber = ""; // Reset phoneNumber
+    // Generate a random 10-digit phone number
+    for (let i = 0; i < 10; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      phoneNumber += characters.charAt(randomIndex);
+    }
+    // Check if the generated phoneNumber is already in use
+  } while (await User.findOne({ phoneNumber }));
+
+  return phoneNumber;
 }
 
 passport.use(
@@ -31,10 +73,28 @@ passport.use(
     async function (request, accessToken, refreshToken, profile, done) {
       try {
         console.log("Google Profile Information:", profile);
-        let user = await User.findOne({ googleId: profile.id });
+
+        // Check if a user with the Google ID and email already exists
+        let user = await User.findOne({
+          $or: [
+            { googleId: profile.id },
+            {
+              email:
+                profile.emails && profile.emails.length > 0
+                  ? profile.emails[0].value
+                  : null,
+            },
+          ],
+        });
 
         if (!user) {
+          const firstName = profile.given_name || lastName;
+          const lastName = profile.family_name || firstName; // Set to firstName if family_name is not present
+          const phoneNumber = await generateUniquePhoneNumber();
+          const password = await generatePassword();
+
           user = new User({
+            authMethod: "google",
             email:
               profile.emails && profile.emails.length > 0
                 ? profile.emails[0].value
@@ -43,13 +103,13 @@ passport.use(
               profile.photos && profile.photos.length > 0
                 ? profile.photos[0].value
                 : null,
-            firstName: profile.given_name || null,
-            lastName: profile.family_name || null,
-            userName: profile.displayName || null,
+            firstName,
+            lastName,
+            userName: profile.displayName || "",
             gender: profile.gender || "Other",
             birthDate: 0,
-            password: generatePassword, // Set a unique password or handle this based on your authentication flow
-            phoneNumber: 0,
+            password,
+            phoneNumber,
             verified: profile.email_verified,
             address: {
               city: "",
@@ -60,6 +120,15 @@ passport.use(
               street: "",
             },
           });
+
+          await user.save();
+        } else {
+          // If the user exists, update their information (if needed)
+          user.email =
+            profile.emails && profile.emails.length > 0
+              ? profile.emails[0].value
+              : user.email;
+          // ... (update other fields if needed)
 
           await user.save();
         }

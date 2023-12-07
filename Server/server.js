@@ -7,12 +7,11 @@ const userRoute = require("./routes/userRoute");
 const orderRoute = require("./routes/orderRoute");
 const cors = require("cors");
 const morgan = require("morgan");
-const passport = require("passport");
 const cookieParser = require("cookie-parser");
-//const passportConfig = require("./utils/passportSetUp");
-const session = require("express-session");
+
 // app
 const app = require("./app");
+
 require("dotenv").config();
 
 const ReviewRoute = require("./routes/reviewRoute");
@@ -34,18 +33,6 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-
-// Use express-session middleware
-app.use(
-  session({
-    secret: "your-secret-key",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
-// Initialize Passport and restore authentication state if available from the session
-app.use(passport.initialize());
-app.use(passport.session());
 
 // routes
 app.use("/reviews", ReviewRoute);
