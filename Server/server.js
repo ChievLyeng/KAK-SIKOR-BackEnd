@@ -7,16 +7,11 @@ const userRoute = require("./routes/userRoute");
 const orderRoute = require("./routes/orderRoute");
 const cors = require("cors");
 const morgan = require("morgan");
-const passport = require("passport");
-const cookieParser = require("cookie-parser");
-//const passportConfig = require("./utils/passportSetUp");
-const session = require("express-session");
+
 // app
 const app = require("./app");
 require("dotenv").config();
 
-const ReviewRoute = require("./routes/reviewRoute");
-const { findOneAndUpdate } = require("./models/categoryModel");
 
 const connectDB = require("./config/DB");
 dotenv.config({ path: "./config.env" });
@@ -27,32 +22,6 @@ process.on("uncaughtException", (err) => {
   console.log(err.name, err.message);
   process.exit(1);
 });
-
-// middleware
-app.use(cors());
-app.use(morgan("dev"));
-app.use(express.json());
-app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
-
-// Use express-session middleware
-app.use(
-  session({
-    secret: "your-secret-key",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
-// Initialize Passport and restore authentication state if available from the session
-app.use(passport.initialize());
-app.use(passport.session());
-
-// routes
-app.use("/reviews", ReviewRoute);
-app.use("/users", userRoute);
-app.use("/products", productRoute);
-app.use("/category", categoryRoute);
-app.use("/orders", orderRoute);
 
 // db
 connectDB();

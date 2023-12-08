@@ -5,10 +5,14 @@ const userRoute = require("./routes/userRoute");
 const reviewRoute = require("./routes/reviewRoute");
 const orderRoute = require("./routes/orderRoute");
 const commentRoute = require("./routes/commentRoute");
+const cookieParser = require("cookie-parser");
+//const passportConfig = require("./utils/passportSetUp");
+const session = require("express-session");
 const cors = require("cors");
 const morgan = require("morgan");
 const AppError = require("./utils/appError");
 const GlobalErrorHandler = require("./middlewares/globalErrorhandler");
+const passport = require("passport");
 const dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
 
@@ -26,6 +30,21 @@ app.use(cors(corsConfig));
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+
+// Initialize Passport and restore authentication state if available from the session
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Use express-session middleware
+app.use(
+  session({
+    secret: "your-secret-key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
 // api end point
 app.use("/api/v1/reviews", reviewRoute);
