@@ -28,18 +28,18 @@ process.on("uncaughtException", (err) => {
 });
 
 // middleware
-app.use(cors());
-app.use(morgan("dev"));
-app.use(express.json());
-app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
+// app.use(cors());
+// app.use(morgan("dev"));
+// app.use(express.json());
+// app.use(cookieParser());
+// app.use(express.urlencoded({ extended: true }));
 
 // routes
-app.use("/reviews", ReviewRoute);
-app.use("/users", userRoute);
-app.use("/products", productRoute);
-app.use("/category", categoryRoute);
-app.use("/orders", orderRoute);
+// app.use("/reviews", ReviewRoute);
+// app.use("/users", userRoute);
+// app.use("/products", productRoute);
+// app.use("/category", categoryRoute);
+// app.use("/orders", orderRoute);
 
 // db
 connectDB();

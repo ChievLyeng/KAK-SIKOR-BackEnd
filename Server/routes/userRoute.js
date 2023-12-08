@@ -40,7 +40,7 @@ router.route("/:id/verify").post(resendVerificationEmail);
 
 // Authentication Routes
 router.route("/login").post(loginUser);
-router.route("/logout/:id").get(logoutUser);
+router.route("/logout").post(logoutUser);
 router.route("/refresh-token").post(refreshToken);
 
 // Password Routes

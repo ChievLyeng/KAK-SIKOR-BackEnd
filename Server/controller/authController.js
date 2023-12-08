@@ -103,7 +103,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/auth/refresh-token
 // @access  Public
 const refreshToken = asyncHandler(async (req, res) => {
-  const { refreshToken } = req.Cookies;
+  const { refreshToken } = req.cookies;
   if (!refreshToken) {
     throw new AppError("Refresh token is missing", 401);
   }
@@ -175,7 +175,10 @@ const logoutUser = asyncHandler(async (req, res, next) => {
   res.clearCookie("accessToken");
   res.clearCookie("refreshToken");
 
-  // Simulate asynchronous operation
+  // Log the userId to check if it's received correctly
+  console.log("UserId:", userId);
+
+  // Delete session data from the database
   await SessionToken.deleteMany({ userId });
 
   // Send a successful JSON response
