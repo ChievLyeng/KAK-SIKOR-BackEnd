@@ -127,7 +127,8 @@ const getReviewsByProduct = asyncHandler(async (req, res, next) => {
 
   // Calculate the average rating
   const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
-  const averageRating = countReviews > 0 ? totalRating / countReviews : 0;
+  const averageRating =
+    countReviews > 0 ? Number((totalRating / countReviews).toFixed(1)) : 0;
 
   res.status(200).json({
     status: "success",

@@ -13,11 +13,9 @@ const productSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "Product mush have name."],
-      unique: true,
     },
     slug: {
       type: String,
-      unique: true,
     },
     description: {
       type: String,
@@ -31,7 +29,6 @@ const productSchema = new mongoose.Schema(
       type: mongoose.ObjectId,
       ref: "Category",
       required: [true, "Category is require."],
-      unique: true,
     },
     quantity: {
       type: Number,
@@ -43,7 +40,6 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Supplier",
       required: [true, "Supplier of product is require."],
-      unique: true,
     },
     Origin: {
       type: String,
