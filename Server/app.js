@@ -25,6 +25,16 @@ const corsConfig = {
   methods: "GET, POST, PUT, PATCH, DELETE, HEAD",
   credentials: true,
 };
+
+// Use express-session middleware
+app.use(
+  session({
+    secret: "your-secret-key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
 // middleware
 app.use(cors(corsConfig));
 app.use(morgan("dev"));
@@ -37,14 +47,7 @@ app.use(cookieParser());
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Use express-session middleware
-app.use(
-  session({
-    secret: "your-secret-key",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+
 
 // api end point
 app.use("/api/v1/reviews", reviewRoute);
