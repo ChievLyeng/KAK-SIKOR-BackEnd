@@ -4,31 +4,30 @@ const orderSchema = mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
       ref: "User",
     },
     orderItems: [
       {
-        name: { type: String, required: [true,'Item name is require.'] },
-        qty: { type: Number, required: [true,'Quantity is require.'] },
-        image: { type: String, required: [true,'Image is require.'] },
-        price: { type: Number, required: [true,'Price is require.'] },
+        qty: { type: Number, required: [true, "Quantity is require."] },
+        photos: [{ type: String, required: [true, "Image is require."] }],
+        price: { type: Number, required: [true, "Price is require."] },
         product: {
           type: mongoose.Schema.Types.ObjectId,
-          required: [true,'Product is require.'],
+          required: [true, "Product is require."],
           ref: "Product",
         },
       },
     ],
     shippingAddress: {
-      address: { type: String, required: [true,'Deliver address is require.'] },
-      city: { type: String, required: [true,'City is require.'] },
-      postalCode: { type: String, required: true },
-      country: { type: String, required: [true,'Country is require.'] },
+      address: {
+        type: String,
+        required: [true, "Deliver address is require."],
+      },
+      city: { type: String, required: [true, "City is require."] },
     },
     paymentMethod: {
       type: String,
-      required: [true, 'Payment method is require.'],
+      required: [true, "Payment method is require."],
     },
     paymentResult: {
       id: { type: String },
@@ -38,27 +37,22 @@ const orderSchema = mongoose.Schema(
     },
     itemsPrice: {
       type: Number,
-      required: true,
       default: 0.0,
     },
     taxPrice: {
       type: Number,
-      required: true,
       default: 0.0,
     },
     shippingPrice: {
       type: Number,
-      required: true,
       default: 0.0,
     },
     totalPrice: {
       type: Number,
-      required: true,
       default: 0.0,
     },
     isPaid: {
       type: Boolean,
-      required: true,
       default: false,
     },
     paidAt: {
@@ -66,7 +60,6 @@ const orderSchema = mongoose.Schema(
     },
     isDelivered: {
       type: Boolean,
-      required: true,
       default: false,
     },
     deliveredAt: {

@@ -33,6 +33,11 @@ app.use("/api/v1/products", productRoute);
 app.use("/api/v1/categories", categoryRoute);
 app.use("/api/v1/orders", orderRoute);
 
+// PayPal
+app.use("/api/v1/config/paypal", (req, res) =>
+  res.send({ clientId: process.env.PAYPAL_CLIENT_ID })
+);
+
 // handle wrong route request
 app.all("*", (req, res, next) => {
   next(new AppError(`Cant't find ${req.originalUrl} on this server!`, 404));

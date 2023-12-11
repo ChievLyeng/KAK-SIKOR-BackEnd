@@ -1,5 +1,5 @@
 const dotenv = require("dotenv");
-const connectDB = require('./config/DB')
+const connectDB = require("./config/DB");
 dotenv.config({ path: "./config.env" });
 
 // handle uncaugt exception error
@@ -15,7 +15,7 @@ const app = require("./app");
 // db
 connectDB();
 
-const PORT =process.env.PORT || 5000
+const PORT = process.env.PORT || 3001;
 const server = app.listen(PORT, () => {
   console.log("Connected to MongoDB & Listening on port", process.env.PORT);
 });
