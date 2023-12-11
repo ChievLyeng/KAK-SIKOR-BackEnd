@@ -14,12 +14,6 @@ const AppError = require("./utils/appError");
 const GlobalErrorHandler = require("./middlewares/globalErrorhandler");
 const passport = require("passport");
 const dotenv = require("dotenv");
-<<<<<<< HEAD
-const cookieParser = require("cookie-parser");
-const session = require("express-session");
-const passport = require("passport");
-=======
->>>>>>> feature/adminBackoffice
 dotenv.config({ path: "./config.env" });
 require("./utils/passportSetUp");
 
@@ -49,12 +43,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-
 // Initialize Passport and restore authentication state if available from the session
 app.use(passport.initialize());
 app.use(passport.session());
-
-
 
 // Use express-session middleware
 app.use(

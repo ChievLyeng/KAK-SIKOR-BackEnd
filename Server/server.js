@@ -1,22 +1,9 @@
 const dotenv = require("dotenv");
-const express = require("express");
-const mongoose = require("mongoose");
-const productRoute = require("./routes/productRoute");
-const categoryRoute = require("./routes/categoryRoute");
-const userRoute = require("./routes/userRoute");
-const orderRoute = require("./routes/orderRoute");
-const cors = require("cors");
-const morgan = require("morgan");
-<<<<<<< HEAD
-const cookieParser = require("cookie-parser");
-=======
->>>>>>> feature/adminBackoffice
 
 // app
 const app = require("./app");
 
 require("dotenv").config();
-
 
 const connectDB = require("./config/DB");
 dotenv.config({ path: "./config.env" });
@@ -28,23 +15,6 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
-<<<<<<< HEAD
-// middleware
-// app.use(cors());
-// app.use(morgan("dev"));
-// app.use(express.json());
-// app.use(cookieParser());
-// app.use(express.urlencoded({ extended: true }));
-
-// routes
-// app.use("/reviews", ReviewRoute);
-// app.use("/users", userRoute);
-// app.use("/products", productRoute);
-// app.use("/category", categoryRoute);
-// app.use("/orders", orderRoute);
-
-=======
->>>>>>> feature/adminBackoffice
 // db
 connectDB();
 
