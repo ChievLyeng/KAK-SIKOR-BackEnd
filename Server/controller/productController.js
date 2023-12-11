@@ -1,5 +1,6 @@
 const { default: slugify } = require("slugify");
 const productModel = require("../models/productModel");
+const reviewModel = require("../models/reviewModel");
 const AWS = require("aws-sdk");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
@@ -65,14 +66,6 @@ const createProduct = asyncHandler(async (req, res, next) => {
   if (!name || !description || !price || !category || !quantity || !Supplier) {
     return next(new AppError("All fields must be provided", 404));
   }
-
-  // productModel.collection.dropIndex({ Supplier: 1 }, (err, result) => {
-  //   if (err) {
-  //     console.error("Error dropping index:", err);
-  //   } else {
-  //     console.log("Unique index on Supplier dropped successfully");
-  //   }
-  // });
 
   // Slugify the name for URL-friendly slug
   const slug = slugify(name);
@@ -264,6 +257,9 @@ const getProductBySuppplier = asyncHandler(async (req, res) => {
 // Delete product controller
 const deleteProduct = asyncHandler(async (req, res, next) => {
   const productId = req.params.id;
+
+  // find and delete review associated with the product
+  await reviewModel.deleteMany({ product: productId });
 
   // Retrieve the product to get the list of photos
   const product = await productModel.findById(productId);

@@ -169,14 +169,22 @@ const createSendToken = asyncHandler(async (user, statusCode, res, next) => {
 // @route   DELETE /api/v1/users/logout/:id
 // @access  Private (requires authentication)
 const logoutUser = asyncHandler(async (req, res, next) => {
-  const userId = req.params.id;
+  const { refreshToken } = req.cookies;
+  console.log("req", req.cookies);
 
-  // Clear cookies
-  res.clearCookie("accessToken");
-  res.clearCookie("refreshToken");
+  console.log("refreshToken:", refreshToken);
 
-  // Simulate asynchronous operation
-  await SessionToken.deleteMany({ userId });
+  const session = await SessionToken.findOneAndDelete({ refreshToken });
+
+  if (session) {
+    // Clear cookies
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+  }
+
+  // Log the userId to check if it's received correctly
+
+  // Delete session data from the database
 
   // Send a successful JSON response
   res.status(200).json({

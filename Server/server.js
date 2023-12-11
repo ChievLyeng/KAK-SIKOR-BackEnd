@@ -7,15 +7,16 @@ const userRoute = require("./routes/userRoute");
 const orderRoute = require("./routes/orderRoute");
 const cors = require("cors");
 const morgan = require("morgan");
+<<<<<<< HEAD
 const cookieParser = require("cookie-parser");
+=======
+>>>>>>> feature/adminBackoffice
 
 // app
 const app = require("./app");
 
 require("dotenv").config();
 
-const ReviewRoute = require("./routes/reviewRoute");
-const { findOneAndUpdate } = require("./models/categoryModel");
 
 const connectDB = require("./config/DB");
 dotenv.config({ path: "./config.env" });
@@ -27,6 +28,7 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
+<<<<<<< HEAD
 // middleware
 app.use(cors());
 app.use(morgan("dev"));
@@ -41,6 +43,8 @@ app.use("/products", productRoute);
 app.use("/category", categoryRoute);
 app.use("/orders", orderRoute);
 
+=======
+>>>>>>> feature/adminBackoffice
 // db
 connectDB();
 
