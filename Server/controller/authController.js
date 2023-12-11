@@ -103,7 +103,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/auth/refresh-token
 // @access  Public
 const refreshToken = asyncHandler(async (req, res) => {
-  const { refreshToken } = req.Cookies;
+  const { refreshToken } = req.cookies;
   if (!refreshToken) {
     throw new AppError("Refresh token is missing", 401);
   }
@@ -170,12 +170,10 @@ const createSendToken = asyncHandler(async (user, statusCode, res, next) => {
 // @access  Private (requires authentication)
 const logoutUser = asyncHandler(async (req, res, next) => {
   const { refreshToken } = req.cookies;
-  console.log("req", req.cookies);
 
   console.log("refreshToken:", refreshToken);
 
   const session = await SessionToken.findOneAndDelete({ refreshToken });
-
   if (session) {
     // Clear cookies
     res.clearCookie("accessToken");
