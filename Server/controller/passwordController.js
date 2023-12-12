@@ -29,21 +29,14 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/users/verify-otp
 // @access  Public
 const verifyOTP = asyncHandler(async (req, res, next) => {
-  const { email, userOTP } = req.body;
+  const { userOTP } = req.body;
 
-  const user = await User.findOne({ email });
+  // Retrieve the latest OTP record for any user (you may need to adjust this logic)
+  const latestOtp = await Otp.findOne().sort({ createdAt: -1 });
 
-  if (!user) {
-    return next(new AppError("User not found", 404));
-  }
-
-  const otpRecords = await Otp.find({ email }).sort({ createdAt: -1 });
-
-  if (otpRecords.length === 0) {
+  if (!latestOtp) {
     return next(new AppError("OTP not found", 404));
   }
-
-  const latestOtp = otpRecords[otpRecords.length - 1];
 
   if (userOTP === latestOtp.otp) {
     return res.status(200).json({ message: "OTP verified successfully" });
