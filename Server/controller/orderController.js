@@ -7,21 +7,19 @@ const asyncHandler = require("../utils/asyncHandler");
 const getOrders = asyncHandler(async (req, res, next) => {
   const orders = await Order.find().populate("user", "name email");
   res.json(orders);
-
 });
 
 // @desc    Get single order
 // @route   GET /api/orders/:id
 // @access  Public
-const getOrderById = asyncHandler(async (req, res,next) => {
-
+const getOrderById = asyncHandler(async (req, res, next) => {
   const order = await Order.findById(req.params.id).populate(
     "user",
     "name email"
   );
 
   if (!order) {
-    return next( new AppError('Order not found.',404))
+    return next(new AppError("Order not found.", 404));
   }
 
   res.json(order);
@@ -30,8 +28,7 @@ const getOrderById = asyncHandler(async (req, res,next) => {
 // @desc    Create an order
 // @route   POST /api/orders
 // @access  Public
-const createOrder = asyncHandler( async (req, res, next) => {
-
+const createOrder = asyncHandler(async (req, res, next) => {
   const order = new Order(req.body);
   const createdOrder = await order.save();
   res.status(201).json(createdOrder);
@@ -40,12 +37,11 @@ const createOrder = asyncHandler( async (req, res, next) => {
 // @desc    Update an order to paid
 // @route   PUT /api/orders/:id/pay
 // @access  Public
-const updateOrderToPaid = asyncHandler( async (req, res, next) => {
-
+const updateOrderToPaid = asyncHandler(async (req, res, next) => {
   const order = await Order.findById(req.params.id);
 
   if (!order) {
-    return next( new AppError('Order not found.',404));
+    return next(new AppError("Order not found.", 404));
   }
 
   order.isPaid = true;
@@ -59,22 +55,21 @@ const updateOrderToPaid = asyncHandler( async (req, res, next) => {
 
   const updatedOrder = await order.save();
   res.json(updatedOrder);
-})
+});
 
 // @desc    Delete an order
 // @route   DELETE /api/orders/:id
 // @access  Public
-const deleteOrder = asyncHandler( async (req, res, next) => {
-
+const deleteOrder = asyncHandler(async (req, res, next) => {
   const order = await Order.findById(req.params.id);
 
   if (!order) {
-    return next( new AppError('Order not found.',404));
+    return next(new AppError("Order not found.", 404));
   }
 
   await order.remove();
   res.json({ message: "Order removed" });
-})
+});
 
 module.exports = {
   getOrders,

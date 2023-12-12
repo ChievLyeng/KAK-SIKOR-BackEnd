@@ -11,6 +11,7 @@ const connectDB = () => {
 
   // connect to db
   mongoose.connect(MONGO_URI).then(() => {
+    // eslint-disable-next-line no-console
     console.log("Database is connected");
   });
 };

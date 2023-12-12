@@ -1,3 +1,4 @@
+/* eslint-disable node/no-extraneous-require */
 const { default: slugify } = require("slugify");
 const productModel = require("../models/productModel");
 const reviewModel = require("../models/reviewModel");
@@ -42,13 +43,9 @@ const deletePhotosFromS3 = asyncHandler(async (urls = []) => {
   });
 
   await Promise.all(deletePromises);
-  console.log(`Deleted ${urls.length} photo(s) from S3`);
 });
 
 const createProduct = asyncHandler(async (req, res, next) => {
-  console.log(req.fields);
-  console.log(req.files);
-
   // Destructure fields from the request
   const {
     name,
@@ -71,7 +68,7 @@ const createProduct = asyncHandler(async (req, res, next) => {
   const slug = slugify(name);
 
   // Ensure 'photos' is treated as an array
-  let photos = req.files.photos;
+  let { photos } = req.files;
   if (photos && !Array.isArray(photos)) {
     photos = [photos];
   }
@@ -221,7 +218,6 @@ const getAllProducts = asyncHandler(async (req, res) => {
 //get Product by supplier
 const getProductBySuppplier = asyncHandler(async (req, res) => {
   const { id: supplierID } = req.params;
-  console.log("supplierId :", supplierID);
 
   const products = await productModel
     .find({ Supplier: supplierID })
@@ -278,9 +274,8 @@ const deleteProduct = asyncHandler(async (req, res, next) => {
           Key: key,
         })
         .promise()
-        .catch((err) => {
-          console.error(`Failed to delete photo with key ${key}:`, err);
-          return null; // Return null for any failed delete operation
+        .catch((error) => {
+          return error.message; // Return null for any failed delete operation
         });
     });
 
@@ -290,7 +285,6 @@ const deleteProduct = asyncHandler(async (req, res, next) => {
     // Filter out any null results (failed deletions)
     const failedDeletes = deleteResults.filter((result) => result === null);
     if (failedDeletes.length > 0) {
-      console.warn(`Failed to delete ${failedDeletes.length} photos.`);
       // Optionally handle the failed deletions here
     }
   }
@@ -305,8 +299,6 @@ const deleteProduct = asyncHandler(async (req, res, next) => {
 
 //update product controller
 const updateProduct = asyncHandler(async (req, res, next) => {
-  console.log(req.files);
-  console.log(req.fields);
   const { id } = req.params;
   const updateData = req.fields; // Assuming this contains all other product fields to update
 
@@ -316,7 +308,7 @@ const updateProduct = asyncHandler(async (req, res, next) => {
 
   // Handle photo updates
   if (req.files && req.files.photos) {
-    let photos = req.files.photos;
+    let { photos } = req.files;
     // Ensure 'photos' is an array even if only one file is uploaded
     if (!Array.isArray(photos)) {
       photos = [photos];

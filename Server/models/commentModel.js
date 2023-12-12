@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const Schema = mongoose.Schema;
+const { Schema } = mongoose;
 
 const replySchema = new mongoose.Schema({
   userId: {
@@ -41,8 +41,8 @@ const commentSchema = new mongoose.Schema({
 });
 
 // Set up a middleware to remove associated replies when a comment is deleted
-commentSchema.pre('remove', async function (next) {
-  const Reply = require('./path-to-replyModel'); // Adjust the path based on your project structure
+commentSchema.pre("remove", async function (next) {
+  const Reply = require("");
   await Reply.deleteMany({ commentId: this._id });
   next();
 });

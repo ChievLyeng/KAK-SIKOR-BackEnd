@@ -26,11 +26,10 @@ const requireSignIn = async (req, res, next) => {
     req.user = await User.findById(decoded.id);
 
     if (!req.user) {
-      console.log("User not found");
       return res.status(401).json({ error: "User not found" });
     }
 
-    const id = req.params.id;
+    const { id } = req.params;
 
     // Check if the user is authorized to perform the action
     if (req.user._id.toString() !== id.toString()) {
@@ -42,7 +41,6 @@ const requireSignIn = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error("Error in requireSignIn:", error);
     res.status(401).json({ error: "Unauthorized" });
   }
 };
@@ -58,7 +56,6 @@ const requireAdmin = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    console.error("Error in requireAdmin:", error);
     res.status(500).json({ error: "Server error" });
   }
 };

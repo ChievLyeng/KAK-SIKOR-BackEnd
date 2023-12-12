@@ -1,5 +1,4 @@
 const Review = require("../models/reviewModel");
-const User = require("../models/userModel");
 const mongoose = require("mongoose");
 const asyncHandler = require("./../utils/asyncHandler");
 const AppError = require("./../utils/appError");

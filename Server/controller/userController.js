@@ -1,10 +1,8 @@
 const User = require("../models/userModel");
 const Supplier = require("../models/supplierModel");
-const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendVerificationEmail");
 const crypto = require("crypto");
 const Token = require("../models/tokenModel");
-const bcrypt = require("bcryptjs");
 const SessionToken = require("../models/sessionModel");
 const asyncHandler = require("../utils/asyncHandler");
 const AppError = require("../utils/appError");
@@ -75,8 +73,6 @@ const handleRegistrationError = asyncHandler(async (error, res) => {
     // Handle other duplicated fields if needed
     return res.status(400).json({ error: "Duplicate field violation." });
   }
-
-  console.error("User registration error:", error);
   res.status(400).json({ error: "Failed to register user. Please try again." });
 });
 
@@ -87,7 +83,6 @@ const verifyEmail = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ _id: req.params.id });
 
   if (!user) {
-    console.error("Invalid user ID");
     return next(new AppError("Invalid link", 400));
   }
 
@@ -97,7 +92,6 @@ const verifyEmail = asyncHandler(async (req, res, next) => {
   });
 
   if (!token) {
-    console.error("Invalid token");
     return next(new AppError("Invalid link", 400));
   }
 
@@ -108,7 +102,6 @@ const verifyEmail = asyncHandler(async (req, res, next) => {
   );
 
   if (!updatedUser) {
-    console.error("Failed to update user verification status");
     return next(new AppError("Internal Server Error", 500));
   }
 
@@ -116,10 +109,9 @@ const verifyEmail = asyncHandler(async (req, res, next) => {
   if (token && typeof token.remove === "function") {
     await token.remove();
   } else {
-    console.error("Token not found or remove method not available");
+    return new AppError("Token not found or remove method not available", 401);
   }
 
-  console.log("Email verified successfully");
   res.status(200).send({ message: "Email verified successfully" });
 });
 
@@ -201,7 +193,7 @@ const getAllSuppliers = asyncHandler(async (req, res, next) => {
 // @desc    Get supplier by ID
 // @route   GET /api/v1/users/suppliers/:id
 // @access  Public
-const getSuppliersById = asyncHandler(async (req, res, next) => {
+const getUserById = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
   const supplier = await User.findById(id);
@@ -302,7 +294,7 @@ module.exports = {
   registerUser,
   getAllUsers,
   getAllSuppliers,
-  getSuppliersById,
+  getUserById,
   updateUser,
   deleteUser,
   verifyEmail,

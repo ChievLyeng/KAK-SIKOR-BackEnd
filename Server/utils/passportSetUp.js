@@ -1,7 +1,6 @@
 const passport = require("passport");
 require("dotenv").config();
 const User = require("../models/userModel");
-const SessionToken = require("../models/sessionModel");
 
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
 
@@ -30,7 +29,6 @@ passport.use(
     },
     async function (request, accessToken, refreshToken, profile, done) {
       try {
-        console.log("Google Profile Information:", profile);
         let user = await User.findOne({ googleId: profile.id });
 
         if (!user) {
@@ -66,7 +64,6 @@ passport.use(
 
         done(null, user);
       } catch (error) {
-        console.error("Error during GoogleStrategy:", error);
         done(error, null);
       }
     }

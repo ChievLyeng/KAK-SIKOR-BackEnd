@@ -8,7 +8,6 @@ const {
   updateProduct,
 } = require("../controller/productController");
 const formidable = require("express-formidable");
-const { requireSignIn } = require("../middlewares/authMiddleware");
 const router = express.Router();
 const formOptions = {
   multiples: true,

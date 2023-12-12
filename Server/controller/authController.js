@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
 const User = require("../models/userModel");
 const asyncHandler = require("../utils/asyncHandler");
 const SessionToken = require("../models/sessionModel");
@@ -39,10 +38,8 @@ const saveTokensToDB = asyncHandler(async (userId) => {
     });
 
     await token.save();
-    console.log("Tokens saved to the database");
     tokensSaved = true;
   } catch (error) {
-    console.error("Error saving tokens to the database:", error.message);
     // Return an AppError
     return new AppError("Error saving tokens to the database", 500);
   }
@@ -104,7 +101,6 @@ const loginUser = asyncHandler(async (req, res, next) => {
   user.status = "active";
   await user.save();
 
-  const token = signToken(user._id);
   createSendToken(user, 200, res, next);
 });
 

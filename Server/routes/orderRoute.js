@@ -15,5 +15,4 @@ router.post("/", createOrder);
 router.put("/:id/pay", updateOrderToPaid);
 router.delete("/:id", deleteOrder);
 
-
 module.exports = router;

@@ -12,11 +12,7 @@ const router = express.Router();
 
 router.route("/").get(getReviews).post(createReview);
 
-router
-  .route("/:id")
-  .get(getReview)
-  .post(updateReview)
-  .delete(deleteReview);
+router.route("/:id").get(getReview).post(updateReview).delete(deleteReview);
 
 router.get("/product/:id", getReviewsByProduct);
 

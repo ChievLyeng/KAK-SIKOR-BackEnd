@@ -31,9 +31,5 @@ module.exports = async (email, subject, text) => {
     };
 
     await transporter.sendMail(mailOptions);
-    console.log("Email sent Successfully");
-  } catch (error) {
-    console.log("Email not sent");
-    console.log(error);
-  }
+  } catch (error) {}
 };

@@ -5,7 +5,7 @@ const {
   resendVerificationEmail,
   getAllUsers,
   getAllSuppliers,
-  getSuppliersById,
+  getUserById,
   deleteUser,
   updateUser,
 } = require("../controller/userController");
@@ -33,6 +33,7 @@ router.route("/register").post(registerUser);
 router
   .route("/:id")
   .put(requireSignIn, updateUser)
+  .get(getUserById)
   .delete(requireSignIn, deleteUser);
 router.route("/suppliers").get(getAllSuppliers);
 router.route("/:id/verify/:token").get(verifyEmail);

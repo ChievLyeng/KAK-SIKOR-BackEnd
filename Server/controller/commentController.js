@@ -4,7 +4,7 @@ const AppError = require("./../utils/appError");
 
 // Get all comments on one specific review
 const getComments = asyncHandler(async (req, res, next) => {
-  const reviewId = req.params.reviewId;
+  const { reviewId } = req.params;
   const comments = await Comment.find({ reviewId: reviewId })
     .populate("userId")
     .populate({
@@ -42,7 +42,7 @@ const createComment = asyncHandler(async (req, res, next) => {
 
 // Update a comment
 const updateComment = asyncHandler(async (req, res, next) => {
-  const commentId = req.params.commentId; 
+  const { commentId } = req.params;
   const { commentText, replies } = req.body;
 
   // Find the comment by its ID and update it
@@ -64,7 +64,7 @@ const updateComment = asyncHandler(async (req, res, next) => {
 
 // Delete a comment
 const deleteComment = asyncHandler(async (req, res, next) => {
-  const commentId = req.params.commentId; // Change parameter name to commentId
+  const { commentId } = req.params.commentId; // Change parameter name to commentId
 
   // Find the comment by its ID and remove it
   const deletedComment = await Comment.findByIdAndDelete(commentId);
