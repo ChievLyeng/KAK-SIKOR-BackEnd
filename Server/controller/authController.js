@@ -25,27 +25,19 @@ const signRefreshToken = (id) => {
 // @desc    Save access and refresh tokens to the database
 // @param   {string} userId - User ID
 const saveTokensToDB = asyncHandler(async (userId) => {
-  let tokensSaved = false;
+  const accessToken = await signToken(userId);
+  const refreshToken = await signRefreshToken(userId);
 
-  try {
-    const accessToken = await signToken(userId);
-    const refreshToken = await signRefreshToken(userId);
+  const token = new SessionToken({
+    userId,
+    accessToken,
+    refreshToken,
+  });
 
-    const token = new SessionToken({
-      userId,
-      accessToken,
-      refreshToken,
-    });
+  await token.save();
 
-    await token.save();
-    tokensSaved = true;
-  } catch (error) {
-    // Return an AppError
-    return new AppError("Error saving tokens to the database", 500);
-  }
-
-  // Return the success/failure status
-  return tokensSaved;
+  // Return the success status
+  return true;
 });
 
 // @desc    Log in a user
@@ -109,7 +101,6 @@ const loginUser = asyncHandler(async (req, res, next) => {
 // @access  Public
 const refreshToken = asyncHandler(async (req, res) => {
   const { refreshToken } = req.cookies;
-
   if (!refreshToken) {
     throw new AppError("Refresh token is missing", 401);
   }
@@ -175,19 +166,26 @@ const createSendToken = asyncHandler(async (user, statusCode, res, next) => {
 // @route   DELETE /api/v1/users/logout/:id
 // @access  Private (requires authentication)
 const logoutUser = asyncHandler(async (req, res, next) => {
-  const userId = req.params.id;
+  const { refreshToken } = req.cookies;
 
-  await SessionToken.deleteMany({ userId });
+  console.log("refreshToken:", refreshToken);
 
-  res.clearCookie("accessToken");
-  res.clearCookie("refreshToken");
+  const session = await SessionToken.findOneAndDelete({ refreshToken });
+  if (session) {
+    // Clear cookies
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+  }
 
+  // Log the userId to check if it's received correctly
+
+  // Delete session data from the database
+
+  // Send a successful JSON response
   res.status(200).json({
     status: "success",
     message: "User logged out successfully",
   });
-
-  return next(new AppError("Internal Server Error", 500));
 });
 
 module.exports = {
