@@ -35,7 +35,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
 
     const createdOrder = await order.save();
 
-    res.status(201).json({ success: true, data: createdOrder });
+    res.status(201).json(createdOrder);
   }
 });
 
@@ -44,7 +44,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
 // @access  Private
 const getMyOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find({ user: req.user._id });
-  res.status(200).json({ success: true, data: orders });
+  res.status(200).json(orders);
 });
 
 // @desc    Get order by ID
@@ -59,9 +59,9 @@ const getOrderById = asyncHandler(async (req, res) => {
   // );
 
   if (order) {
-    res.status(200).json({ success: true, data: order });
+    res.status(200).json(order);
   } else {
-    res.status(404).send({ success: false, error: "Order not found" });
+    res.status(404).send("Order not found");
   }
 });
 
@@ -83,9 +83,9 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
 
     const updatedOrder = await order.save();
 
-    res.status(200).json({ success: true, data: updatedOrder });
+    res.status(200).json(updatedOrder);
   } else {
-    res.status(404).send({ success: false, error: "Order not found" });
+    res.status(404).send("Order not found");
   }
 });
 
