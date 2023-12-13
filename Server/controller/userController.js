@@ -8,6 +8,7 @@ const bcrypt = require("bcryptjs");
 const SessionToken = require("../models/sessionModel");
 const asyncHandler = require("../utils/asyncHandler");
 const AppError = require("../utils/appError");
+const GlobalErrorHandler = require("../middlewares/globalErrorhandler");
 
 // @desc    Register a new user or supplier
 // @route   POST /api/v1/users/register
@@ -54,30 +55,9 @@ const registerUser = asyncHandler(async (req, res, next) => {
       message:
         "An email has been sent to your account. Please verify your email before logging in.",
     });
-  } catch (error) {
-    handleRegistrationError(error, res);
+  } catch (err) {
+    GlobalErrorHandler(err, req, res);
   }
-});
-
-const handleRegistrationError = asyncHandler(async (error, res) => {
-  if (error.code === 11000) {
-    // Duplicate key error, indicating a duplication of a unique field
-    const duplicateField = Object.keys(error.keyPattern)[0];
-
-    if (duplicateField === "email") {
-      return res.status(400).json({ error: "Email is already in use." });
-    }
-
-    if (duplicateField === "phoneNumber") {
-      return res.status(400).json({ error: "Phone number is already in use." });
-    }
-
-    // Handle other duplicated fields if needed
-    return res.status(400).json({ error: "Duplicate field violation." });
-  }
-
-  console.error("User registration error:", error);
-  res.status(400).json({ error: "Failed to register user. Please try again." });
 });
 
 // @desc    Verify user's email
