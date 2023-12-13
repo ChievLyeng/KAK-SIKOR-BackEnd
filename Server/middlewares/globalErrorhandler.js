@@ -12,9 +12,10 @@ const sendErrorDev = (err, res) => {
 
 //send error for prouduction
 const sendErrorProd = (err, res) => {
-  if (err.isOperatiional) {
+  console.log(err);
+  if (err.isOperational) {
     res.status(err.statusCode).json({
-      status: err.status,
+      status: err.status || "error",
       message: err.message,
     });
   } else {
@@ -32,8 +33,9 @@ const handleCastErrorDB = (err) => {
   return new AppError(message, 400);
 };
 
-const handleDublicatFieldsDB = (err) => {
-  const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0]; // simplet string to get the array of key
+const handleDuplicateFieldsDB = (err) => {
+  const match = err.errmsg.match(/(["'])(\\?.)*?\1/);
+  const value = match ? match[0] : "unknown"; // simplet string to get the array of key
 
   const message = `Duplicate field value: ${value}. Please use another value!`;
   return new AppError(message, 400);
@@ -59,13 +61,13 @@ const GlobalErrorHandler = (err, req, res, next) => {
     }
 
     if (err.code === 11000) {
-      err = handleDublicatFieldsDB(err);
+      err = handleDuplicateFieldsDB(err);
     }
 
     if (err.name === "ValidationError") {
-      handleValidationErrorDB(err);
+      err = handleValidationErrorDB(err);
     }
-    sendErrorProd(err, res);
+    return sendErrorProd(err, res);
   }
 };
 
