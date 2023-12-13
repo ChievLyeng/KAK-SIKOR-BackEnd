@@ -163,7 +163,6 @@ const getProduct = asyncHandler(async (req, res, next) => {
       Origin: product.Origin, // Include the Origin field
       createdAt: product.createdAt,
       updatedAt: product.updatedAt,
-      // ... any other fields you want to include ...
     },
   });
 });
@@ -215,39 +214,91 @@ const getAllProducts = asyncHandler(async (req, res) => {
   });
 });
 
-//get Product by supplier
-const getProductBySuppplier = asyncHandler(async (req, res) => {
+// Get Product by supplier
+const getProductBySupplier = asyncHandler(async (req, res) => {
   const { id: supplierID } = req.params;
+  try {
+    // Find products by the supplier ID
+    const products = await productModel
+      .find({ Supplier: supplierID })
+      .populate("category")
+      .populate("Supplier")
+      .select("-photo")
+      .limit(12)
+      .sort({ createdAt: -1 });
 
-  const products = await productModel
-    .find({ Supplier: supplierID })
-    .populate("category")
-    .populate("Supplier")
-    .select("-photo")
-    .limit(12)
-    .sort({ createdAt: -1 });
+    // Function to generate signed URLs for photos of a product
+    const generateSignedUrls = async (product) => {
+      if (!product.photos || product.photos.length === 0) {
+        return [];
+      }
+      const signedUrls = await Promise.all(
+        product.photos.map(async (photo) => {
+          const signedUrl = await s3.getSignedUrlPromise("getObject", {
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: photo.url.split("/").pop(),
+            Expires: 3600,
+          });
+          return { url: signedUrl, _id: photo._id }; // Return an object with the signed URL and _id
+        })
+      );
+      return signedUrls;
+    };
 
-  res.status(200).json({
-    success: true,
-    products: products.map((product) => ({
-      _id: product._id,
-      name: product.name,
-      slug: product.slug,
-      description: product.description,
-      price: product.price,
-      category: product.category,
-      quantity: product.quantity,
-      Nutrition_Fact: product.Nutrition_Fact,
-      Origin: product.Origin,
-      Supplier: product.Supplier,
-      photo: {
-        contentType: product.photo.contentType,
-        data: "Photo data has been uploaded successfully",
-      },
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt,
-    })),
-  });
+    // Generating signed URLs for photos in each product
+    const productsWithSignedUrls = await Promise.all(
+      products.map(async (product) => {
+        const signedUrls = await generateSignedUrls(product);
+        return {
+          ...product.toObject(), // Convert product to a plain JS object
+          photos: signedUrls, // Replace photos with signed URLs
+        };
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      products: productsWithSignedUrls,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+    });
+  }
+});
+
+// Get products by Category ID:
+const getProductsByCategory = asyncHandler(async (req, res) => {
+  const { id: categoryId } = req.params;
+  try {
+    const products = await productModel
+      .find({ category: categoryId })
+      .populate("category")
+      .populate("Supplier")
+      .limit(12)
+      .sort({ createdAt: -1 });
+
+    const productsWithSignedUrls = await Promise.all(
+      products.map(async (product) => {
+        const signedUrls = await generateSignedUrls(product);
+        return {
+          ...product.toObject(),
+          photos: signedUrls,
+        };
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      products: productsWithSignedUrls,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+    });
+  }
 });
 
 // Delete product controller
@@ -341,7 +392,8 @@ module.exports = {
   createProduct,
   getProduct,
   getAllProducts,
-  getProductBySuppplier,
+  getProductBySupplier,
+  getProductsByCategory,
   deleteProduct,
   updateProduct,
 };

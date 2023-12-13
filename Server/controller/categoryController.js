@@ -12,7 +12,7 @@ const createCategory = asyncHandler(async (req, res, next) => {
   if (existingCategory) {
     return res.status(200).send({
       success: false,
-      message: "Category Already Exisits",
+      message: "Category Already Exist.",
     });
   }
   const category = await new categoryModel({

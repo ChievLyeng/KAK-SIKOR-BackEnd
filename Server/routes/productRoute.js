@@ -3,7 +3,8 @@ const {
   createProduct,
   getProduct,
   getAllProducts,
-  getProductBySuppplier,
+  getProductBySupplier,
+  getProductsByCategory,
   deleteProduct,
   updateProduct,
 } = require("../controller/productController");
@@ -24,8 +25,10 @@ router
 router
   .route("/:id")
   .get(getProduct)
-  .get(getProductBySuppplier)
+  .get(getProductsByCategory)
   .delete(deleteProduct)
   .post(formidable(formOptions), updateProduct);
+
+router.get("/supplier/:id", getProductBySupplier);
 
 module.exports = router;
