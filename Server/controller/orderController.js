@@ -36,7 +36,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
 
     const createdOrder = await order.save();
 
-    res.status(201).json(createdOrder);
+    res.status(201).json({ success: true, data: createdOrder });
   }
 });
 
@@ -45,7 +45,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
 // @access  Private
 const getMyOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find({ user: req.user._id });
-  res.status(200).json(orders);
+  res.status(200).json({ success: true, data: orders });
 });
 
 // @desc    Get order by ID
@@ -60,9 +60,9 @@ const getOrderById = asyncHandler(async (req, res) => {
   // );
 
   if (order) {
-    res.status(200).json(order);
+    res.status(200).json({ success: true, data: order });
   } else {
-    res.status(404).send("Order not found");
+    res.status(404).send({ success: false, error: "Order not found" });
   }
 });
 
@@ -84,9 +84,9 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
 
     const updatedOrder = await order.save();
 
-    res.status(200).json(updatedOrder);
+    res.status(200).json({ success: true, data: updatedOrder });
   } else {
-    res.status(404).send("Order not found");
+    res.status(404).send({ success: false, error: "Order not found" });
   }
 });
 
@@ -94,7 +94,7 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
 // @route   PUT /api/v1/orders/:id/deliver
 // @access  Private/Admin
 const updateOrderToDelivered = asyncHandler(async (req, res) => {
-  res.send("update order to delivered");
+  res.send({ success: true, message: "Order updated to delivered" });
 });
 
 // @desc    Get all orders
@@ -102,7 +102,7 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
 // @access  Private
 const getOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find({}); //.populate('user', 'id name');
-  res.json(orders);
+  res.json({ success: true, data: orders });
 });
 
 module.exports = {
