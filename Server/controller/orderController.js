@@ -14,8 +14,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
     shippingPrice,
     totalPrice,
   } = req.body;
-  console.log(req.body.orderItems[0]);
-  items = orderItems?.map((x) => ({
+  items = orderItems.map((x) => ({
     ...x,
     product: x._id,
     // _id: undefined,

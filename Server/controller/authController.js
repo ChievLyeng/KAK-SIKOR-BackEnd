@@ -116,15 +116,11 @@ const refreshToken = asyncHandler(async (req, res) => {
   });
 
   if (existingSessionToken) {
-    const updatedSessionToken = await SessionToken.findOneAndUpdate(
+    const SessionToken = await SessionToken.findOneAndUpdate(
       { userId: decoded.id },
       { accessToken: newAccessToken },
       { new: true }
     );
-
-    console.log("Updated Session Token:", updatedSessionToken);
-  } else {
-    console.log("Session Token not found for user:", decoded.id);
   }
 
   res.cookie("accessToken", newAccessToken, { httpOnly: true });
@@ -139,9 +135,6 @@ const createSendToken = asyncHandler(async (user, statusCode, res, next) => {
 
   // Store tokens in the database
   await saveTokensToDB(user._id, token, refreshToken);
-
-  // Log the token for debugging purposes
-  console.log("Setting accessToken cookie:", token);
 
   // Set the accessToken cookie
   res.cookie("accessToken", token, { httpOnly: true });
@@ -167,8 +160,6 @@ const createSendToken = asyncHandler(async (user, statusCode, res, next) => {
 // @access  Private (requires authentication)
 const logoutUser = asyncHandler(async (req, res, next) => {
   const { refreshToken } = req.cookies;
-
-  console.log("refreshToken:", refreshToken);
 
   const session = await SessionToken.findOneAndDelete({ refreshToken });
   if (session) {
