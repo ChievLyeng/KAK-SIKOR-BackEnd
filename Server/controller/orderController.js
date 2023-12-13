@@ -94,7 +94,7 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
 // @route   PUT /api/v1/orders/:id/deliver
 // @access  Private/Admin
 const updateOrderToDelivered = asyncHandler(async (req, res) => {
-  res.send({ success: true, message: "Order updated to delivered" });
+  res.send("Order updated to delivered");
 });
 
 // @desc    Get all orders
@@ -102,7 +102,7 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
 // @access  Private
 const getOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find({}); //.populate('user', 'id name');
-  res.json({ success: true, data: orders });
+  res.json(orders);
 });
 
 module.exports = {
