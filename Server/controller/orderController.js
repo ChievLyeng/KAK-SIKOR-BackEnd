@@ -100,7 +100,17 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
 // @route   GET /api/v1/orders
 // @access  Private
 const getOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({}); //.populate('user', 'id name');
+  const orders = await Order.find({})
+    .sort({ createdAt: -1 })
+    .limit(10)
+    .populate({
+      path: "user",
+      select: "firstName lastName _id",
+    })
+    .populate({
+      path: "orderItems.product",
+      select: "name",
+    });
   res.json(orders);
 });
 
