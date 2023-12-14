@@ -16,13 +16,16 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
     return next(new AppError("User not found", 404));
   }
 
+  // Store the email in the response to send it to the frontend
+  res.locals.userEmail = email;
+
   await resetPassword(
     email,
     "Password Reset Code",
     `You have requested to reset your password. Please use the verification code provided below to proceed with the password reset.`
   );
 
-  res.status(200).json({ message: "OTP sent successfully" });
+  res.status(200).json({ message: "OTP sent successfully", userEmail: email });
 });
 
 // @desc    Handle OTP verification
