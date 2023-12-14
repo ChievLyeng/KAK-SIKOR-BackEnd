@@ -270,14 +270,30 @@ const getProductBySupplier = asyncHandler(async (req, res) => {
 
 // Get products by Category ID:
 const getProductsByCategory = asyncHandler(async (req, res) => {
-  const { id: categoryId } = req.params;
+  const { id } = req.params;
   try {
     const products = await productModel
-      .find({ category: categoryId })
+      .find({ category: id })
       .populate("category")
       .populate("Supplier")
-      .limit(12)
       .sort({ createdAt: -1 });
+
+    const generateSignedUrls = async (product) => {
+      if (!product.photos || product.photos.length === 0) {
+        return [];
+      }
+      const signedUrls = await Promise.all(
+        product.photos.map(async (photo) => {
+          const signedUrl = await s3.getSignedUrlPromise("getObject", {
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: photo.url.split("/").pop(),
+            Expires: 3600,
+          });
+          return { url: signedUrl, _id: photo._id }; // Return an object with the signed URL and _id
+        })
+      );
+      return signedUrls;
+    };
 
     const productsWithSignedUrls = await Promise.all(
       products.map(async (product) => {
@@ -300,7 +316,6 @@ const getProductsByCategory = asyncHandler(async (req, res) => {
     });
   }
 });
-
 // Delete product controller
 const deleteProduct = asyncHandler(async (req, res, next) => {
   const productId = req.params.id;

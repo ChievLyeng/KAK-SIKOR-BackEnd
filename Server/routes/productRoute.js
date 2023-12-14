@@ -25,10 +25,9 @@ router
 router
   .route("/:id")
   .get(getProduct)
-  .get(getProductsByCategory)
   .delete(deleteProduct)
   .post(formidable(formOptions), updateProduct);
 
 router.get("/supplier/:id", getProductBySupplier);
-
+router.get("/category/:id", getProductsByCategory);
 module.exports = router;
