@@ -100,9 +100,12 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
 // @route   GET /api/v1/orders
 // @access  Private
 const getOrders = asyncHandler(async (req, res) => {
+  const result = await Order.countDocuments();
+  const orderCompleted = await Order.countDocuments({ isPaid: true });
+  const orderPending = await Order.countDocuments({ isPaid: false });
+  const orderDelivered = await Order.countDocuments({ isDelivered: true });
   const orders = await Order.find({})
     .sort({ createdAt: -1 })
-    .limit(10)
     .populate({
       path: "user",
       select: "firstName lastName _id",
@@ -111,7 +114,15 @@ const getOrders = asyncHandler(async (req, res) => {
       path: "orderItems.product",
       select: "name",
     });
-  res.json(orders);
+  res.json({
+    data: {
+      result,
+      orderCompleted,
+      orderDelivered,
+      orderPending,
+      orders,
+    },
+  });
 });
 
 module.exports = {
