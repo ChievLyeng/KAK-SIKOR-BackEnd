@@ -44,7 +44,9 @@ const addOrderItems = asyncHandler(async (req, res) => {
 // @route   GET /api/v1/orders/myorders
 // @access  Private
 const getMyOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({ user: req.user._id });
+  const orders = await Order.find({
+    /*user: req.user._id*/
+  }); // we need to store the user data in DB first to make this route work.
   res.status(200).json(orders);
 });
 
@@ -55,7 +57,7 @@ const getOrderById = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
 
   // .populate(
-  //   "User",
+  //   "user",
   //   "firstName lastName email"
   // );
 

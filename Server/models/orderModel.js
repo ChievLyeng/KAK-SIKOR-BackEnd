@@ -7,10 +7,12 @@ const orderSchema = mongoose.Schema(
       ref: "User",
     },
     orderItems: [
+      // map for each product
       {
         qty: { type: Number, required: [true, "Quantity is require."] },
         photos: [{ type: String, required: [true, "Image is require."] }],
         price: { type: Number, required: [true, "Price is require."] },
+        quantity: { type: Number, require: [true, "Quantity is require"] },
         product: {
           type: mongoose.Schema.Types.ObjectId,
           required: [true, "Product is require."],
