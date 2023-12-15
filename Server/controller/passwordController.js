@@ -16,34 +16,30 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
     return next(new AppError("User not found", 404));
   }
 
+  // Store the email in the response to send it to the frontend
+  res.locals.userEmail = email;
+
   await resetPassword(
     email,
     "Password Reset Code",
     `You have requested to reset your password. Please use the verification code provided below to proceed with the password reset.`
   );
 
-  res.status(200).json({ message: "OTP sent successfully" });
+  res.status(200).json({ message: "OTP sent successfully", userEmail: email });
 });
 
 // @desc    Handle OTP verification
 // @route   POST /api/v1/users/verify-otp
 // @access  Public
 const verifyOTP = asyncHandler(async (req, res, next) => {
-  const { email, userOTP } = req.body;
+  const { userOTP } = req.body;
 
-  const user = await User.findOne({ email });
+  // Retrieve the latest OTP record for any user (you may need to adjust this logic)
+  const latestOtp = await Otp.findOne().sort({ createdAt: -1 });
 
-  if (!user) {
-    return next(new AppError("User not found", 404));
-  }
-
-  const otpRecords = await Otp.find({ email }).sort({ createdAt: -1 });
-
-  if (otpRecords.length === 0) {
+  if (!latestOtp) {
     return next(new AppError("OTP not found", 404));
   }
-
-  const latestOtp = otpRecords[otpRecords.length - 1];
 
   if (userOTP === latestOtp.otp) {
     return res.status(200).json({ message: "OTP verified successfully" });

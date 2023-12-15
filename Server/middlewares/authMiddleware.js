@@ -6,43 +6,55 @@ const AppError = require("../utils/appError");
 
 // Protected Routes token base
 const requireSignIn = asyncHandler(async (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
-
-  // Verify the token
-  const decoded = JWT.verify(token, process.env.JWT_SECRET);
-
-  // Check if the user's session token exists in the database
-  const sessionToken = await SessionToken.findOne({
-    userId: decoded.id,
-    accessToken: token,
-  });
-
-  if (!sessionToken) {
+  // Check if the authorization header is present
+  const authorizationHeader = req.headers.authorization;
+  if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
     return res
       .status(401)
-      .json({ error: "Unauthorized: Invalid session token" });
+      .json({ error: "Unauthorized: Missing or invalid token" });
   }
 
-  // Check if the user still exists (optional)
-  req.user = await User.findById(decoded.id);
+  // Extract the token from the authorization header
+  const token = authorizationHeader.split(" ")[1];
 
-  if (!req.user) {
-    return res.status(401).json({ error: "User not found" });
-  }
+  try {
+    // Verify the token
+    const decoded = JWT.verify(token, process.env.JWT_SECRET);
 
-  const { id } = req.params;
-
-  // Check if the user is authorized to perform the action
-  if (req.user._id.toString() !== id.toString()) {
-    return res.status(403).json({
-      error:
-        "Unauthorized: You can only perform this action on your own account",
+    // Check if the user's session token exists in the database
+    const sessionToken = await SessionToken.findOne({
+      userId: decoded.id,
+      accessToken: token,
     });
+
+    if (!sessionToken) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized: Invalid session token" });
+    }
+
+    // Check if the user still exists (optional)
+    req.user = await User.findById(decoded.id);
+
+    if (!req.user) {
+      return res.status(401).json({ error: "User not found" });
+    }
+
+    const { id } = req.params;
+
+    // Check if the user is authorized to perform the action
+    if (req.user._id.toString() !== id.toString()) {
+      return res.status(403).json({
+        error:
+          "Unauthorized: You can only perform this action on your own account",
+      });
+    }
+
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: "Unauthorized: Invalid token" });
   }
-
-  next();
 });
-
 const requireAdmin = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user._id);
   if (!user || user.role !== "admin") {
@@ -63,4 +75,15 @@ const requireAdmin = asyncHandler(async (req, res, next) => {
   }
 });
 
-module.exports = { requireSignIn, requireAdmin };
+const restrictTo =
+  (...roles) =>
+  (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError("You do not have permission to perform this action", 403)
+      );
+    }
+    next();
+  };
+
+module.exports = { requireSignIn, requireAdmin, restrictTo };
