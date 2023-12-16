@@ -65,6 +65,18 @@ const getOrderById = asyncHandler(async (req, res) => {
   }
 });
 
+const getSupplierOrders = asyncHandler(async (req, res, next) => {
+  const supplierOrders = await Order.findById(req.params.id);
+  const result = await Order.countDocuments({ id: _id });
+
+  res.status(200).json({
+    data: {
+      result,
+      supplierOrders,
+    },
+  });
+});
+
 // @desc    Update order to paid
 // @route   PUT /api/v1/orders/:id/pay
 // @access  Private
@@ -112,7 +124,7 @@ const getOrders = asyncHandler(async (req, res) => {
     })
     .populate({
       path: "orderItems.product",
-      select: "name",
+      select: "name Supplier",
     });
   res.json({
     data: {
@@ -132,4 +144,5 @@ module.exports = {
   updateOrderToPaid,
   updateOrderToDelivered,
   getOrders,
+  getSupplierOrders,
 };

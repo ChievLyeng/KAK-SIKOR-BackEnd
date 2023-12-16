@@ -219,6 +219,7 @@ const getProductBySupplier = asyncHandler(async (req, res) => {
   const { id: supplierID } = req.params;
   try {
     // Find products by the supplier ID
+    const result = await productModel.countDocuments({ Supplier: supplierID });
     const products = await productModel
       .find({ Supplier: supplierID })
       .populate("category")
@@ -258,6 +259,7 @@ const getProductBySupplier = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
+      result,
       products: productsWithSignedUrls,
     });
   } catch (error) {
