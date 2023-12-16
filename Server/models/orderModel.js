@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Product = require("./productModel.js");
 
 const orderSchema = mongoose.Schema(
   {
@@ -72,6 +73,21 @@ const orderSchema = mongoose.Schema(
     timestamps: true,
   }
 );
+
+orderSchema.pre("save", function (next) {
+  Promise.all(
+    this.orderItems.map(async (item) => {
+      if (item.quantity < item.qty)
+        throw new AppError("The order quality is exceed stock limited", 400);
+      item.quantity -= item.qty;
+      const product = await Product.findByIdAndUpdate(item.product, {
+        quantity: item.quantity,
+      });
+      console.log(product);
+    })
+  );
+  next();
+});
 
 const Order = mongoose.model("Order", orderSchema);
 

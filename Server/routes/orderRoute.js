@@ -13,7 +13,7 @@ const router = express.Router();
 router.route("/").post(addOrderItems).get(getOrders);
 router.route("/mine").get(getMyOrders);
 router.route("/:id").get(getOrderById);
-router.route("/:id/pay").put(updateOrderToPaid);
+router.route("/:id/pay").patch(updateOrderToPaid);
 router.route("/:id/deliver").put(updateOrderToDelivered);
 
 module.exports = router;
