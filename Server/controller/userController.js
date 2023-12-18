@@ -35,16 +35,17 @@ const registerUser = asyncHandler(async (req, res, next) => {
 
     // Save the user to the database
     const savedUser = await newUser.save();
+    console.log(savedUser, "save user");
 
     // Generate a verification token
     const token = await new Token({
       userId: savedUser._id,
       token: crypto.randomBytes(32).toString("hex"),
     }).save();
+    console.log(token);
 
     // Construct the verification URL
-    const verificationURL = `${process.env.BASE_URL}/users/${savedUser._id}/verify/${token.token}`;
-
+    const verificationURL = `${process.env.BASE_URL}/api/v1/users/${savedUser._id}/verify/${token.token}`;
     // Send verification email
     await sendEmail(savedUser.email, "Verify Email", verificationURL);
 
@@ -63,6 +64,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
 // @access  Public
 const verifyEmail = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ _id: req.params.id });
+  console.log(user);
 
   if (!user) {
     return next(new AppError("Invalid link", 400));
@@ -85,6 +87,9 @@ const verifyEmail = asyncHandler(async (req, res, next) => {
 
   if (!updatedUser) {
     return next(new AppError("Internal Server Error", 500));
+  }
+  if (updatedUser) {
+    res.redirect(process.env.CLIENT_URL);
   }
 
   // Check if token is defined before calling remove
