@@ -1,4 +1,5 @@
 const Order = require("../models/orderModel.js");
+const AppError = require("../utils/appError.js");
 
 const asyncHandler = require("../utils/asyncHandler");
 
@@ -84,7 +85,7 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
     },
   });
   if (!order) {
-    res.status(404).send("Order not found");
+    return (new AppError("Order not found!"),404)
   }
   // We Get this from Paypal});
 
@@ -108,6 +109,25 @@ const getOrders = asyncHandler(async (req, res) => {
   res.json(orders);
 });
 
+const getOrderHistory = asyncHandler( async(req, res) => {
+  const { id } = req.params  
+  console.log(id)
+  const orderHistory= await Order.find({user : id},{isPaid:true});
+
+  if (!orderHistory){
+    return (new AppError("Order not found!"),404)
+  }
+
+  res.status(200).json({
+    data:{
+      status: "Succes",
+      orderHistory
+    }
+  })
+}
+
+)
+
 module.exports = {
   addOrderItems,
   getMyOrders,
@@ -115,4 +135,5 @@ module.exports = {
   updateOrderToPaid,
   updateOrderToDelivered,
   getOrders,
+  getOrderHistory
 };
