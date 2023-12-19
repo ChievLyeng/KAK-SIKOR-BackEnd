@@ -41,14 +41,9 @@ const registerUser = asyncHandler(async (req, res, next) => {
       userId: savedUser._id,
       token: crypto.randomBytes(32).toString("hex"),
     }).save();
-    console.log("save user :",savedUser)
-    console.log("token",token)
 
     // Construct the verification URL
     const verificationURL = `${process.env.BASE_URL}/api/v1/users/${savedUser._id}/verify/${token.token}`;
-
-    console.log("save user", savedUser)
-    console.log(verificationURL)
 
     // Send verification email
     await sendEmail(savedUser.email, "Verify Email", verificationURL);
@@ -69,23 +64,19 @@ const registerUser = asyncHandler(async (req, res, next) => {
 // @access  Public
 const verifyEmail = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ _id: req.params.id });
-  console.log("sent link :", req.params.token)
-  console.log("user", user)
+
   if (!user) {
     return next(new AppError("Invalid link", 400));
   }
 
-  
+  const token = await Token.findOne({
+    userId: req.params.id,
+    token: req.params.token,
+  });
 
-  // const token = await Token.findOne({
-  //   userId: req.params.id,
-  //   token: req.params.token,
-  // });
-  // console.log("find token :", token)
-
-  // if (!token) {
-  //   return next(new AppError("Invalid link", 400));
-  // }
+  if (!token) {
+    return next(new AppError("Invalid link", 400));
+  }
 
   const updatedUser = await User.findOneAndUpdate(
     { _id: user._id },
@@ -245,7 +236,7 @@ const deleteUser = asyncHandler(async (req, res, next) => {
   });
 });
 
-// @desc    Update user information
+// @desc    Update useer information
 // @route   PUT /api/v1/users/:id
 // @access  Private (requires authentication)
 const updateUser = asyncHandler(async (req, res, next) => {
