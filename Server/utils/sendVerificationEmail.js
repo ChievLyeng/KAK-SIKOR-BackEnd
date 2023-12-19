@@ -29,7 +29,7 @@ module.exports = async (email, subject, text) => {
     </div>
       `,
     };
-
+    console.log("email sent successfully!")
     await transporter.sendMail(mailOptions);
   } catch (error) {}
 };
