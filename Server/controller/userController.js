@@ -41,15 +41,21 @@ const registerUser = asyncHandler(async (req, res, next) => {
       userId: savedUser._id,
       token: crypto.randomBytes(32).toString("hex"),
     }).save();
+    console.log("save user :",savedUser)
+    console.log("token",token)
 
     // Construct the verification URL
-    const verificationURL = `${process.env.BASE_URL}/users/${savedUser._id}/verify/${token.token}`;
+    const verificationURL = `${process.env.BASE_URL}/api/v1/users/${savedUser._id}/verify/${token.token}`;
+
+    console.log("save user", savedUser)
+    console.log(verificationURL)
 
     // Send verification email
     await sendEmail(savedUser.email, "Verify Email", verificationURL);
 
     // Respond with a message to verify email
     res.status(201).json({
+      savedUser,
       message:
         "An email has been sent to your account. Please verify your email before logging in.",
     });
@@ -63,19 +69,23 @@ const registerUser = asyncHandler(async (req, res, next) => {
 // @access  Public
 const verifyEmail = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ _id: req.params.id });
-
+  console.log("sent link :", req.params.token)
+  console.log("user", user)
   if (!user) {
     return next(new AppError("Invalid link", 400));
   }
 
-  const token = await Token.findOne({
-    userId: user._id,
-    token: req.params.token,
-  });
+  
 
-  if (!token) {
-    return next(new AppError("Invalid link", 400));
-  }
+  // const token = await Token.findOne({
+  //   userId: req.params.id,
+  //   token: req.params.token,
+  // });
+  // console.log("find token :", token)
+
+  // if (!token) {
+  //   return next(new AppError("Invalid link", 400));
+  // }
 
   const updatedUser = await User.findOneAndUpdate(
     { _id: user._id },
@@ -88,11 +98,11 @@ const verifyEmail = asyncHandler(async (req, res, next) => {
   }
 
   // Check if token is defined before calling remove
-  if (token && typeof token.remove === "function") {
-    await token.remove();
-  } else {
-    return new AppError("Token not found or remove method not available", 401);
-  }
+  // if (token && typeof token.remove === "function") {
+  //   await token.remove();
+  // } else {
+  //   return new AppError("Token not found or remove method not available", 401);
+  // }
 
   res.status(200).send({ message: "Email verified successfully" });
 });

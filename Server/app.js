@@ -20,6 +20,7 @@ require("./utils/passportSetUp");
 // express app
 const app = express();
 
+
 // for sending cookie to frontend
 const corsConfig = {
   origin: process.env.CLIENT_URL,
