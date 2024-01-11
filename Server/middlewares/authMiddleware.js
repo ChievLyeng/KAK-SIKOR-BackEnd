@@ -37,7 +37,7 @@ const requireSignIn = asyncHandler(async (req, res, next) => {
     req.user = await User.findById(decoded.id);
 
     if (!req.user) {
-      return res.status(401).json({ error: "User not found" });
+      return res.sta00tus(401).json({ error: "User not found" });
     }
 
     const { id } = req.params;
