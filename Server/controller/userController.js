@@ -55,7 +55,8 @@ const registerUser = asyncHandler(async (req, res, next) => {
         "An email has been sent to your account. Please verify your email before logging in.",
     });
   } catch (err) {
-    GlobalErrorHandler(err, req, res);
+    // GlobalErrorHandler(err, req, res);
+    return new AppError("Error creating", 404);
   }
 });
 
@@ -89,11 +90,11 @@ const verifyEmail = asyncHandler(async (req, res, next) => {
   }
 
   // Check if token is defined before calling remove
-  // if (token && typeof token.remove === "function") {
-  //   await token.remove();
-  // } else {
-  //   return new AppError("Token not found or remove method not available", 401);
-  // }
+  if (token && typeof token.remove === "function") {
+    await token.remove();
+  } else {
+    return new AppError("Token not found or remove method not available", 401);
+  }
 
   res.status(200).send({ message: "Email verified successfully" });
 });
